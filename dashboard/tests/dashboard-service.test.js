@@ -9,9 +9,13 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createDashboardService } = require('../api/dashboardService.ts');
 const {
-  DASHBOARD_ALLOWED_ROLES
+  DASHBOARD_ALLOWED_ROLES,
+  DASHBOARD_WIDGET_KEYS
 } = require('../types.ts');
-const { DASHBOARD_MESSAGES } = require('../utils.ts');
+const {
+  DASHBOARD_MESSAGES,
+  resolveDashboardPermissions
+} = require('../utils.ts');
 
 /**
  * 메모리 기반 대시보드 저장소 테스트 구현체이다.
@@ -108,4 +112,22 @@ test('dashboard service returns full overview for admin', async () => {
   assert.equal(repository.calls.getPersonalOverview, 1);
   assert.equal(repository.calls.getTeamOverview, 1);
   assert.equal(repository.calls.listAnnouncements, 1);
+});
+
+// 권한 조회는 매 호출마다 새로운 복사본을 반환해야 한다.
+test('resolveDashboardPermissions clones mapped configuration per call', () => {
+  // 첫 번째 호출 결과를 받아 참조 공유 여부를 검증할 준비를 한다.
+  const firstPermissions = resolveDashboardPermissions(DASHBOARD_ALLOWED_ROLES.ADMIN);
+  // 반환 객체와 배열을 변형해 이후 호출에 영향을 주는지 확인한다.
+  firstPermissions.canViewAnnouncements = false;
+  firstPermissions.allowedWidgets.push('custom-widget');
+
+  // 두 번째 호출 결과는 원본 기본값을 그대로 유지해야 한다.
+  const secondPermissions = resolveDashboardPermissions(DASHBOARD_ALLOWED_ROLES.ADMIN);
+  assert.equal(secondPermissions.canViewAnnouncements, true);
+  assert.deepEqual(secondPermissions.allowedWidgets, [
+    DASHBOARD_WIDGET_KEYS.TEAM_OVERVIEW,
+    DASHBOARD_WIDGET_KEYS.PERSONAL_OVERVIEW,
+    DASHBOARD_WIDGET_KEYS.ANNOUNCEMENTS
+  ]);
 });

@@ -75,8 +75,13 @@ export function buildDashboardApiResponse<T>(
  * @param role 사용자 역할
  */
 export function resolveDashboardPermissions(role: DashboardRole): DashboardPermissions {
-  // 사전에 정의한 권한 매핑을 그대로 반환한다.
-  return DASHBOARD_ROLE_PERMISSIONS[role];
+  // 사전에 정의한 권한 매핑을 꺼내 복사 준비를 한다.
+  const permissions = DASHBOARD_ROLE_PERMISSIONS[role];
+  // 객체를 얕은 복사하고 위젯 배열도 새로 생성해 외부 변형 영향을 막는다.
+  return {
+    ...permissions,
+    allowedWidgets: [...permissions.allowedWidgets]
+  };
 }
 
 /**
