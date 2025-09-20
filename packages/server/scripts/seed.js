@@ -13,7 +13,9 @@
  * 2. node seed.js 실행
  */
 
-const PocketBase = require('pocketbase');
+// PocketBase 모듈 로드 (CommonJS/ESM 호환)
+const PocketBaseModule = require('pocketbase');
+const PocketBase = PocketBaseModule.default || PocketBaseModule;
 
 // PocketBase 서버 URL 설정 (기본값: http://127.0.0.1:8090)
 const POCKETBASE_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
@@ -37,7 +39,7 @@ function handleError(error, context) {
  */
 async function createUsers() {
   console.log('👥 사용자 생성 중...');
-  
+
   const users = [
     {
       name: '김관리자',
@@ -87,8 +89,12 @@ async function createUsers() {
   ];
 
   const createdUsers = [];
-  
+  const userCredentials = [];
+
   for (const userData of users) {
+    // 로그인 검증을 위해 자격 증명 저장
+    userCredentials.push({ email: userData.email, password: userData.password });
+
     try {
       const user = await pb.collection('users').create(userData);
       createdUsers.push(user);
@@ -109,8 +115,8 @@ async function createUsers() {
       }
     }
   }
-  
-  return createdUsers;
+
+  return { records: createdUsers, credentials: userCredentials };
 }
 
 /**
@@ -366,32 +372,32 @@ async function createSampleTodos(users, projects) {
  */
 async function createSampleAttendance(users) {
   console.log('⏰ 샘플 출석 기록 생성 중...');
-  
+
   const today = new Date();
   const attendanceRecords = [];
-  
+
   // 최근 7일간의 출석 기록 생성
   for (let i = 0; i < 7; i++) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    
+
     // 각 사용자별로 출퇴근 기록 생성
     for (const user of users) {
       // 출근 기록 (09:00)
       const punchInTime = new Date(date);
       punchInTime.setHours(9, 0, 0, 0);
-      
+
       attendanceRecords.push({
         user: user.id,
         type: 'in',
         server_time: punchInTime.toISOString(),
         ip_address: '192.168.1.100'
       });
-      
+
       // 퇴근 기록 (18:00)
       const punchOutTime = new Date(date);
       punchOutTime.setHours(18, 0, 0, 0);
-      
+
       attendanceRecords.push({
         user: user.id,
         type: 'out',
@@ -400,7 +406,7 @@ async function createSampleAttendance(users) {
       });
     }
   }
-  
+
   for (const record of attendanceRecords) {
     try {
       await pb.collection('attendance').create(record);
@@ -413,8 +419,27 @@ async function createSampleAttendance(users) {
       }
     }
   }
-  
+
   console.log(`✅ ${attendanceRecords.length}개의 출석 기록 생성 완료`);
+}
+
+/**
+ * 사용자 로그인 검증 함수
+ */
+async function verifyUserLogins(userCredentials) {
+  console.log('🔐 사용자 로그인 검증 중...');
+
+  for (const credentials of userCredentials) {
+    try {
+      const authResult = await pb.collection('users').authWithPassword(credentials.email, credentials.password);
+      console.log(`✅ 로그인 검증 성공: ${authResult.record.name} (${credentials.email})`);
+    } catch (error) {
+      handleError(error, `로그인 검증 (${credentials.email})`);
+    } finally {
+      // 다음 검증을 위해 인증 스토어 초기화
+      pb.authStore.clear();
+    }
+  }
 }
 
 /**
@@ -436,15 +461,16 @@ async function seed() {
     }
     
     // 데이터 생성
-    const users = await createUsers();
-    const projects = await createProjects(users);
-    await createProjectMembers(users, projects);
-    await createSampleTodos(users, projects);
-    await createSampleAttendance(users);
-    
+    const { records: userRecords, credentials: userCredentials } = await createUsers();
+    const projects = await createProjects(userRecords);
+    await createProjectMembers(userRecords, projects);
+    await createSampleTodos(userRecords, projects);
+    await createSampleAttendance(userRecords);
+    await verifyUserLogins(userCredentials);
+
     console.log('\n🎉 시드 스크립트 완료!');
     console.log('\n📊 생성된 데이터:');
-    console.log(`- 사용자: ${users.length}명`);
+    console.log(`- 사용자: ${userRecords.length}명`);
     console.log(`- 프로젝트: ${projects.length}개`);
     console.log('- 프로젝트 멤버십: 여러 개');
     console.log('- 할 일: 5개');
@@ -467,4 +493,12 @@ if (require.main === module) {
   seed();
 }
 
-module.exports = { seed, createUsers, createProjects, createProjectMembers };
+module.exports = {
+  seed,
+  createUsers,
+  createProjects,
+  createProjectMembers,
+  createSampleTodos,
+  createSampleAttendance,
+  verifyUserLogins
+};
