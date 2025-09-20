@@ -22,6 +22,9 @@ const path = require('path');
 // 주간 보고서 스크립트의 목업 모드 환경 변수 키
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
 
+// PocketBase SDK는 목업 모드가 아닐 때만 동적으로 로드한다.
+const PocketBase = process.env[WEEKLY_REPORT_MOCK_FLAG] === 'true' ? null : require('pocketbase');
+
 // Todo 상태별 CSV/XLSX 헤더 구성을 위한 상수 배열이다.
 const TODO_STATUS_COLUMNS = [
   { key: 'prework', label: '업무전' },
@@ -31,9 +34,14 @@ const TODO_STATUS_COLUMNS = [
   { key: 'incoming', label: '입고예정' }
 ];
 
+
 // 프로젝트 진행률 계산 시 완료 상태로 취급되는 할 일 상태 키를 상수로 분리한다.
 const TODO_COMPLETED_STATUS_KEY =
   TODO_STATUS_COLUMNS.find((column) => column.key === 'po_placed')?.key || 'po_placed';
+
+// 진행률 계산 시 재사용할 완료 상태 키 상수를 정의해 매직 문자열을 제거한다.
+const TODO_COMPLETED_STATUS_KEY = 'po_placed';
+
 
 /**
  * PocketBase 클라이언트 생성 함수
@@ -187,6 +195,7 @@ async function getUserTodosReport(weekStart, weekEnd) {
 /**
  * 프로젝트별 진행률 수집 함수
  */
+
 /**
  * 프로젝트 진행률 지표를 계산하는 헬퍼 함수
  * @param {Array} todos 프로젝트에 속한 할 일 목록
@@ -214,25 +223,41 @@ function calculateProjectProgressMetrics(todos, weekStart, weekEnd) {
 }
 
 async function getProjectProgressReport(weekStart, weekEnd) {
+
+async function getProjectProgressReport(weekStart, weekEnd, pocketBaseClient = pb) {
+
   console.log('📊 프로젝트별 진행률 수집 중...');
 
   try {
     // 모든 프로젝트 조회
-    const projects = await pb.collection('projects').getFullList({
+    const projects = await pocketBaseClient.collection('projects').getFullList({
       expand: 'manager'
     });
-    
+
     const projectProgress = {};
-    
+
     for (const project of projects) {
       // 프로젝트별 할 일 현황 조회
-      const todos = await pb.collection('todos').getFullList({
+      const todos = await pocketBaseClient.collection('todos').getFullList({
         filter: `project = "${project.id}"`,
         expand: 'user'
       });
+
       
       const { totalTodos, completedTodos, progressPercentage, weekTodos } =
         calculateProjectProgressMetrics(todos, weekStart, weekEnd);
+
+      const totalTodos = todos.length;
+      // 통일된 완료 상태 키 상수를 활용해 진행률을 계산한다.
+      const completedTodos = todos.filter(todo => todo.status === TODO_COMPLETED_STATUS_KEY).length;
+      const progressPercentage = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
+      
+      // 해당 주간에 수정된 할 일 수
+      const weekTodos = todos.filter(todo => {
+        const updated = new Date(todo.updated);
+        return updated >= weekStart && updated <= weekEnd;
+      }).length;
+
       
       projectProgress[project.id] = {
         code: project.code,
