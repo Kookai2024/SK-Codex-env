@@ -361,11 +361,11 @@
         "options": {
           "maxSelect": 1,
           "values": [
-            "업무전",
-            "설계중",
-            "보류중",
-            "발주완료",
-            "입고예정"
+            "prework",
+            "design",
+            "hold",
+            "po_placed",
+            "incoming"
           ],
           "displayFields": null
         }
@@ -493,6 +493,107 @@
     "viewRule": "@request.auth.id != \"\"",
     "createRule": "@request.auth.id != \"\"",
     "updateRule": "@request.auth.role = \"admin\"",
+    "deleteRule": "@request.auth.role = \"admin\""
+  },
+  "leave_schedules": {
+    "id": "leave_schedules",
+    "name": "leave_schedules",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "user",
+        "name": "user",
+        "type": "relation",
+        "required": true,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": ["name"]
+        }
+      },
+      {
+        "id": "date",
+        "name": "date",
+        "type": "date",
+        "required": true,
+        "presentable": true,
+        "unique": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "leave_type",
+        "name": "leave_type",
+        "type": "select",
+        "required": true,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "regular_work",
+            "annual_leave",
+            "half_day_leave",
+            "business_trip",
+            "training",
+            "sick_leave"
+          ],
+          "displayFields": null
+        }
+      },
+      {
+        "id": "is_full_day",
+        "name": "is_full_day",
+        "type": "bool",
+        "required": true,
+        "presentable": false,
+        "unique": false,
+        "options": {}
+      },
+      {
+        "id": "note",
+        "name": "note",
+        "type": "text",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": 200,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "approved_by",
+        "name": "approved_by",
+        "type": "relation",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "collectionId": "users",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": ["name"]
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX idx_leave_schedules_user_date ON leave_schedules (user, date)",
+      "CREATE INDEX idx_leave_schedules_type ON leave_schedules (leave_type)"
+    ],
+    "listRule": "@request.auth.id != \"\" && (@request.auth.role = \"admin\" || @request.auth.id = user)",
+    "viewRule": "@request.auth.id != \"\" && (@request.auth.role = \"admin\" || @request.auth.id = user)",
+    "createRule": "@request.auth.id != \"\" && @request.auth.role != \"guest\"",
+    "updateRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\")",
     "deleteRule": "@request.auth.role = \"admin\""
   },
   "weekly_reports": {

@@ -7,6 +7,8 @@
 
 import { DateTime } from 'luxon';
 import {
+  ATTENDANCE_CALENDAR_SHADING,
+  ATTENDANCE_LEAVE_LABELS,
   ATTENDANCE_TIMEZONE,
   ATTENDANCE_TYPES,
   type AttendanceApiResponse,
@@ -14,8 +16,17 @@ import {
   type AttendanceRecord,
   type AttendanceStateSummary,
   type AttendanceType,
-  type LeaveScheduleInfo
+  type LeaveCalendarMatrix,
+  type LeaveScheduleEntry,
+  type LeaveScheduleInfo,
+  type LeaveType
 } from './types';
+
+// 캘린더를 구성할 때 사용할 상수 값들을 정의한다.
+const CALENDAR_CONSTANTS = {
+  DAYS_PER_WEEK: 7,
+  MAX_WEEKS: 6
+} as const;
 
 // 근태 메시지에서 사용할 기본 문구를 상수로 유지한다.
 const DEFAULT_MESSAGES = {
@@ -187,4 +198,111 @@ export function buildApiResponse<T>(
     error,
     timestamp: serverNow.toISOString()
   };
+}
+
+/**
+ * 휴무 일정 배열을 월간 캘린더 형태로 변환한다.
+ * @param year 조회 연도 (예: 2025)
+ * @param month 조회 월 (1~12)
+ * @param entries 휴무 일정 목록
+ */
+export function buildLeaveCalendarMatrix(
+  year: number,
+  month: number,
+  entries: LeaveScheduleEntry[]
+): LeaveCalendarMatrix {
+  // 요청된 연도가 유효한지 기본 검증을 수행한다.
+  if (!Number.isInteger(year) || year < 1970 || year > 2100) {
+    throw new Error('유효하지 않은 연도입니다.');
+  }
+
+  // 요청된 월이 1~12 범위인지 확인한다.
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error('유효하지 않은 월입니다.');
+  }
+
+  // 조회 기준 월의 첫째 날을 Asia/Seoul 시간대로 계산한다.
+  const firstDay = DateTime.fromObject({ year, month, day: 1 }, { zone: ATTENDANCE_TIMEZONE });
+  if (!firstDay.isValid) {
+    throw new Error('생성할 수 없는 날짜입니다.');
+  }
+
+  // Luxon에서 월요일을 1로 반환하므로, 일요일 기준 캘린더를 위해 나머지를 사용한다.
+  const startOffset = firstDay.weekday % CALENDAR_CONSTANTS.DAYS_PER_WEEK;
+  const calendarStart = firstDay.minus({ days: startOffset });
+
+  // 조회 월의 마지막 날짜와 주 단위 보정치를 계산한다.
+  const lastDay = firstDay.endOf('month');
+  const endOffset = (CALENDAR_CONSTANTS.DAYS_PER_WEEK - 1) - (lastDay.weekday % CALENDAR_CONSTANTS.DAYS_PER_WEEK);
+  const calendarEnd = lastDay.plus({ days: endOffset });
+
+  // 날짜별 휴무 일정을 빠르게 찾기 위해 맵 구조로 변환한다.
+  const entryMap = new Map<string, LeaveScheduleEntry>();
+  for (const entry of entries) {
+    const normalizedDate = DateTime.fromISO(entry.date, { zone: ATTENDANCE_TIMEZONE }).toISODate();
+    if (!normalizedDate) {
+      continue;
+    }
+
+    // 동일 날짜에 여러 일정이 있는 경우 종일 일정을 우선한다.
+    const previous = entryMap.get(normalizedDate);
+    if (!previous || (!previous.isFullDay && entry.isFullDay)) {
+      entryMap.set(normalizedDate, entry);
+    }
+  }
+
+  // 캘린더 셀을 일자 단위로 생성한다.
+  const cells: LeaveCalendarMatrix[number] = [];
+  const calendarEndMillis = calendarEnd.toMillis();
+  let cursor = calendarStart;
+  while (cursor.toMillis() <= calendarEndMillis) {
+    const isoDate = cursor.toISODate() ?? cursor.toUTC().toISODate() ?? '';
+    const mappedEntry = entryMap.get(isoDate) ?? null;
+
+    // 음영 값은 일정 존재 여부 및 종일 여부에 따라 결정한다.
+    const shading = mappedEntry
+      ? mappedEntry.isFullDay
+        ? ATTENDANCE_CALENDAR_SHADING.FULL
+        : ATTENDANCE_CALENDAR_SHADING.HALF
+      : ATTENDANCE_CALENDAR_SHADING.NONE;
+
+    // 사용자에게 보여줄 라벨은 등록된 일정이 있는 경우에만 제공한다.
+    const label = mappedEntry ? ATTENDANCE_LEAVE_LABELS[mappedEntry.leaveType] ?? null : null;
+
+    cells.push({
+      date: isoDate,
+      isCurrentMonth: cursor.month === month,
+      leaveType: (mappedEntry?.leaveType as LeaveType | null) ?? null,
+      label,
+      shading,
+      note: mappedEntry?.note ?? null
+    });
+
+    // 날짜를 하루씩 증가시켜 다음 셀을 생성한다.
+    cursor = cursor.plus({ days: 1 });
+  }
+
+  // 6주 표를 항상 유지하기 위해 부족한 주가 있다면 다음 달 날짜를 추가한다.
+  while (cells.length / CALENDAR_CONSTANTS.DAYS_PER_WEEK < CALENDAR_CONSTANTS.MAX_WEEKS) {
+    const lastCell = cells[cells.length - 1];
+    const lastCellDate = DateTime.fromISO(lastCell.date || '', { zone: ATTENDANCE_TIMEZONE });
+    const nextDate = lastCellDate.isValid ? lastCellDate.plus({ days: 1 }) : calendarEnd.plus({ days: 1 });
+    const isoDate = nextDate.toISODate() ?? nextDate.toUTC().toISODate() ?? '';
+    cells.push({
+      date: isoDate,
+      isCurrentMonth: nextDate.month === month,
+      leaveType: null,
+      label: null,
+      shading: ATTENDANCE_CALENDAR_SHADING.NONE,
+      note: null
+    });
+  }
+
+  // 7일 단위로 배열을 분할해 2차원 형태의 캘린더를 구성한다.
+  const matrix: LeaveCalendarMatrix = [];
+  for (let index = 0; index < cells.length; index += CALENDAR_CONSTANTS.DAYS_PER_WEEK) {
+    matrix.push(cells.slice(index, index + CALENDAR_CONSTANTS.DAYS_PER_WEEK));
+  }
+
+  return matrix;
 }

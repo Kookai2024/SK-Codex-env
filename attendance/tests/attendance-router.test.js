@@ -12,7 +12,8 @@ const request = require('supertest');
 const { createAttendanceRouter } = require('../api/attendanceRouter.ts');
 const {
   ATTENDANCE_TYPES,
-  ATTENDANCE_ALLOWED_ROLES
+  ATTENDANCE_ALLOWED_ROLES,
+  ATTENDANCE_LEAVE_TYPES
 } = require('../types.ts');
 
 /**
@@ -41,6 +42,26 @@ class InMemoryAttendanceRepository {
   }
 }
 
+/**
+ * 테스트용 휴무 일정 저장소 구현
+ */
+class InMemoryLeaveScheduleRepository {
+  constructor(initialEntries = []) {
+    this.entries = [...initialEntries];
+  }
+
+  async listForRange(userId, startDateIso, endDateIso) {
+    return this.entries
+      .filter(
+        (entry) =>
+          entry.userId === userId &&
+          entry.date >= startDateIso &&
+          entry.date <= endDateIso
+      )
+      .map((entry) => ({ ...entry }));
+  }
+}
+
 // 공통 헤더 빌더
 function buildMemberHeaders() {
   return {
@@ -53,10 +74,15 @@ function buildMemberHeaders() {
 function createTestApp(options = {}) {
   const repository = options.repository ?? new InMemoryAttendanceRepository();
   const timeProvider = options.timeProvider ?? (() => new Date('2025-09-25T23:00:00Z'));
+  const leaveScheduleRepository = options.disableCalendar
+    ? null
+    : options.leaveScheduleRepository ??
+      new InMemoryLeaveScheduleRepository(options.leaveEntries ?? []);
   const router = createAttendanceRouter({
     repository,
     timeProvider,
-    leaveLookup: options.leaveLookup ?? null
+    leaveLookup: options.leaveLookup ?? null,
+    leaveScheduleRepository
   });
   const app = express();
   app.set('trust proxy', true);
@@ -125,4 +151,58 @@ test('router blocks punch when leave lookup reports leave', async () => {
   assert.equal(response.status, 400);
   assert.equal(response.body.ok, false);
   assert.match(response.body.error ?? '', /근태 일정/);
+});
+
+// 캘린더 엔드포인트가 휴무 일정을 반환하는지 확인한다.
+test('calendar endpoint returns monthly matrix for member', async () => {
+  const leaveEntries = [
+    {
+      id: 'leave-1',
+      userId: 'user-1',
+      date: '2025-09-10',
+      leaveType: ATTENDANCE_LEAVE_TYPES.ANNUAL_LEAVE,
+      isFullDay: true,
+      note: '추석 연차'
+    }
+  ];
+
+  const { app } = createTestApp({ leaveEntries });
+  const response = await request(app)
+    .get('/attendance/calendar')
+    .set(buildMemberHeaders())
+    .query({ year: 2025, month: 9 });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.ok, true);
+
+  const flattened = response.body.data.calendar.flat();
+  const matchedCell = flattened.find((cell) => cell.date === '2025-09-10');
+  assert.equal(matchedCell.leaveType, ATTENDANCE_LEAVE_TYPES.ANNUAL_LEAVE);
+  assert.equal(matchedCell.shading, 'full');
+});
+
+// 잘못된 월이 전달되면 400 오류를 반환해야 한다.
+test('calendar endpoint rejects invalid month', async () => {
+  const { app } = createTestApp();
+  const response = await request(app)
+    .get('/attendance/calendar')
+    .set(buildMemberHeaders())
+    .query({ year: 2025, month: 13 });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.ok, false);
+  assert.match(response.body.error ?? '', /연도 또는 월 정보/);
+});
+
+// 휴무 저장소가 없으면 기능 미구현 상태로 응답해야 한다.
+test('calendar endpoint returns 503 when repository missing', async () => {
+  const { app } = createTestApp({ disableCalendar: true });
+  const response = await request(app)
+    .get('/attendance/calendar')
+    .set(buildMemberHeaders())
+    .query({ year: 2025, month: 9 });
+
+  assert.equal(response.status, 503);
+  assert.equal(response.body.ok, false);
+  assert.match(response.body.error ?? '', /캘린더 기능이 아직 구성/);
 });

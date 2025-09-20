@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "test": "npm run test:attendance && npm run test:scripts",
-    "test:attendance": "node --test attendance/tests",
+    "test:attendance": "node --test attendance/tests todos/tests dashboard/tests",
     "test:scripts": "npm --prefix packages/server/scripts test"
   },
   "dependencies": {

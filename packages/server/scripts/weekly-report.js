@@ -24,6 +24,15 @@ const XLSX = require('xlsx');
 // 주간 보고서 스크립트의 목업 모드 환경 변수 키
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
 
+// Todo 상태별 CSV/XLSX 헤더 구성을 위한 상수 배열이다.
+const TODO_STATUS_COLUMNS = [
+  { key: 'prework', label: '업무전' },
+  { key: 'design', label: '설계중' },
+  { key: 'hold', label: '보류중' },
+  { key: 'po_placed', label: '발주완료' },
+  { key: 'incoming', label: '입고예정' }
+];
+
 /**
  * PocketBase 클라이언트 생성 함수
  *
@@ -302,10 +311,12 @@ function generateCSVReport(weekStart, weekEnd, userTodos, projectProgress, atten
   
   // 사용자별 할 일 현황
   csvContent += `=== 사용자별 할 일 현황 ===\n`;
-  csvContent += `사용자,총 할 일,업무전,설계중,보류중,발주완료,입고예정\n`;
-  
+  const statusHeader = TODO_STATUS_COLUMNS.map((column) => column.label).join(',');
+  csvContent += `사용자,총 할 일,${statusHeader}\n`;
+
   for (const [userId, data] of Object.entries(userTodos)) {
-    csvContent += `${data.userName},${data.total},${data.byStatus['업무전'] || 0},${data.byStatus['설계중'] || 0},${data.byStatus['보류중'] || 0},${data.byStatus['발주완료'] || 0},${data.byStatus['입고예정'] || 0}\n`;
+    const statusCounts = TODO_STATUS_COLUMNS.map((column) => data.byStatus[column.key] || 0).join(',');
+    csvContent += `${data.userName},${data.total},${statusCounts}\n`;
   }
   
   csvContent += `\n=== 프로젝트별 진행률 ===\n`;
@@ -342,19 +353,12 @@ function generateExcelReport(weekStart, weekEnd, userTodos, projectProgress, att
   
   // 사용자별 할 일 현황 시트
   const userTodosData = [
-    ['사용자', '총 할 일', '업무전', '설계중', '보류중', '발주완료', '입고예정']
+    ['사용자', '총 할 일', ...TODO_STATUS_COLUMNS.map((column) => column.label)]
   ];
-  
+
   for (const [userId, data] of Object.entries(userTodos)) {
-    userTodosData.push([
-      data.userName,
-      data.total,
-      data.byStatus['업무전'] || 0,
-      data.byStatus['설계중'] || 0,
-      data.byStatus['보류중'] || 0,
-      data.byStatus['발주완료'] || 0,
-      data.byStatus['입고예정'] || 0
-    ]);
+    const statusCounts = TODO_STATUS_COLUMNS.map((column) => data.byStatus[column.key] || 0);
+    userTodosData.push([data.userName, data.total, ...statusCounts]);
   }
   
   const userTodosSheet = XLSX.utils.aoa_to_sheet(userTodosData);

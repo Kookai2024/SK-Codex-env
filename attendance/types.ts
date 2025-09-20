@@ -12,6 +12,29 @@ export const ATTENDANCE_TYPES = {
   LEAVE: 'LEAVE'
 } as const;
 
+// 근태 일정에서 사용할 휴무 유형 상수를 정의한다.
+export const ATTENDANCE_LEAVE_TYPES = {
+  REGULAR_WORK: 'regular_work',
+  ANNUAL_LEAVE: 'annual_leave',
+  HALF_DAY_LEAVE: 'half_day_leave',
+  BUSINESS_TRIP: 'business_trip',
+  TRAINING: 'training',
+  SICK_LEAVE: 'sick_leave'
+} as const;
+
+// 휴무 타입 유니언 타입이다.
+export type LeaveType = (typeof ATTENDANCE_LEAVE_TYPES)[keyof typeof ATTENDANCE_LEAVE_TYPES];
+
+// 휴무 유형을 사용자에게 보여줄 때 사용할 라벨 상수이다.
+export const ATTENDANCE_LEAVE_LABELS: Record<LeaveType, string> = {
+  [ATTENDANCE_LEAVE_TYPES.REGULAR_WORK]: '정상 근무',
+  [ATTENDANCE_LEAVE_TYPES.ANNUAL_LEAVE]: '연차',
+  [ATTENDANCE_LEAVE_TYPES.HALF_DAY_LEAVE]: '반차',
+  [ATTENDANCE_LEAVE_TYPES.BUSINESS_TRIP]: '출장',
+  [ATTENDANCE_LEAVE_TYPES.TRAINING]: '훈련',
+  [ATTENDANCE_LEAVE_TYPES.SICK_LEAVE]: '병가'
+};
+
 // 서버에서 출퇴근 데이터를 저장할 때 사용하는 시간대 상수이다.
 export const ATTENDANCE_TIMEZONE = 'Asia/Seoul' as const;
 
@@ -108,6 +131,54 @@ export interface LeaveScheduleInfo {
 // 근태 일정을 조회하는 함수 시그니처를 정의한다.
 export type LeaveLookupFn = (userId: string, isoDate: string) => Promise<LeaveScheduleInfo | null>;
 
+// 휴무 일정 한 건을 표현하는 타입이다.
+export interface LeaveScheduleEntry {
+  /** PocketBase에서 발급한 고유 ID */
+  id: string;
+  /** 휴무가 등록된 사용자 ID */
+  userId: string;
+  /** YYYY-MM-DD 형식의 날짜 문자열 (Asia/Seoul 기준) */
+  date: string;
+  /** 등록된 휴무 유형 */
+  leaveType: LeaveType;
+  /** 종일 일정 여부 (false면 반차 등) */
+  isFullDay: boolean;
+  /** 비고 또는 메모 */
+  note?: string | null;
+  /** 승인한 관리자 ID (없으면 null) */
+  approvedBy?: string | null;
+}
+
+// 캘린더 음영 표시에 사용할 구분값 상수이다.
+export const ATTENDANCE_CALENDAR_SHADING = {
+  NONE: 'none',
+  HALF: 'half',
+  FULL: 'full'
+} as const;
+
+// 캘린더 음영 타입을 정의한다.
+export type CalendarShading =
+  (typeof ATTENDANCE_CALENDAR_SHADING)[keyof typeof ATTENDANCE_CALENDAR_SHADING];
+
+// 근태 캘린더 셀 구조를 정의한다.
+export interface LeaveCalendarCell {
+  /** 셀에 대응하는 YYYY-MM-DD 날짜 */
+  date: string;
+  /** 현재 요청한 월에 속하는 날짜인지 여부 */
+  isCurrentMonth: boolean;
+  /** 등록된 휴무 유형 (없으면 null) */
+  leaveType: LeaveType | null;
+  /** 사용자에게 보여줄 라벨 (없으면 null) */
+  label: string | null;
+  /** 캘린더에서 사용할 음영 강도 */
+  shading: CalendarShading;
+  /** 참고용 비고 */
+  note: string | null;
+}
+
+// 근태 캘린더 한 달치를 표현하는 2차원 배열 타입이다.
+export type LeaveCalendarMatrix = LeaveCalendarCell[][];
+
 // 출퇴근 데이터를 저장/조회하기 위한 저장소 인터페이스를 정의한다.
 export interface AttendanceRepository {
   /**
@@ -125,6 +196,17 @@ export interface AttendanceRepository {
   createRecord(payload: AttendancePunchPayload): Promise<AttendanceRecord>;
 }
 
+// 휴무 일정을 조회하기 위한 저장소 인터페이스를 정의한다.
+export interface LeaveScheduleRepository {
+  /**
+   * 사용자와 기간을 기준으로 휴무 일정을 조회한다.
+   * @param userId 사용자 ID
+   * @param startDateIso 조회 시작일(YYYY-MM-DD)
+   * @param endDateIso 조회 종료일(YYYY-MM-DD)
+   */
+  listForRange(userId: string, startDateIso: string, endDateIso: string): Promise<LeaveScheduleEntry[]>;
+}
+
 // AttendanceService를 생성할 때 필요한 의존성 모음 타입이다.
 export interface AttendanceServiceDependencies {
   /** 출퇴근 기록 저장소 구현체 */
@@ -133,4 +215,18 @@ export interface AttendanceServiceDependencies {
   leaveLookup?: LeaveLookupFn | null;
   /** 시간 생성 함수(테스트에서 고정 값을 주입하기 위함) */
   timeProvider?: () => Date;
+}
+
+// 휴무 캘린더 서비스를 생성할 때 필요한 의존성 타입이다.
+export interface LeaveCalendarServiceDependencies {
+  /** 휴무 일정 저장소 구현체 */
+  repository: LeaveScheduleRepository;
+  /** 시간 생성 함수(테스트에서 현재 월 검증 용도) */
+  timeProvider?: () => Date;
+}
+
+// 출퇴근 라우터에서 필요한 전체 의존성을 모아둔 타입이다.
+export interface AttendanceRouterDependencies extends AttendanceServiceDependencies {
+  /** 휴무 캘린더 기능 사용 시 필요한 저장소 (선택) */
+  leaveScheduleRepository?: LeaveScheduleRepository | null;
 }
