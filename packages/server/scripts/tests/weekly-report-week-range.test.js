@@ -19,12 +19,15 @@ const REPORTS_DIR = path.join(__dirname, '..', '..', 'reports');
 const SCRIPTS_DIR = path.join(__dirname, '..');
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
 
-// 모듈 로드시 항상 목업 클라이언트를 사용하도록 환경 변수를 설정한다.
+// 모듈 로드시 PocketBase 네트워크 호출을 피하기 위해 목업 모드를 활성화한다.
 const previousMockFlag = process.env[WEEKLY_REPORT_MOCK_FLAG];
 process.env[WEEKLY_REPORT_MOCK_FLAG] = 'true';
 
-// 주간 보고서 모듈에서 진행률 계산 함수를 가져온다.
-const { getProjectProgressReport } = require('../weekly-report');
+// 주간 보고서 모듈에서 진행률 계산 유틸리티와 보고서 함수를 가져온다.
+const { calculateProjectProgressMetrics, getProjectProgressReport } = require('../weekly-report');
+
+// 계산 유틸리티는 테스트 전반의 초기화를 보장하기 위해 불러오기만 수행한다.
+void calculateProjectProgressMetrics;
 
 // 테스트 종료 후 목업 환경 변수 값을 원래대로 복원한다.
 test.after(() => {
