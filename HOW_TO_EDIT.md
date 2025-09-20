@@ -12,11 +12,14 @@
 
 ## 3. 로컬 개발 환경 세팅
 ```bash
+npm install                         # 루트 의존성 (Express/Luxon/zod 등)
 cd packages/server/scripts
-npm install
+npm install                         # PocketBase 스크립트 의존성
 npm run seed      # PocketBase 서버 실행 후 수행
-npm test          # 변경 후에는 항상 테스트를 실행
+cd ../..
+npm test          # 출퇴근/보고서 테스트 전체 실행
 ```
+- 보고서 스크립트만 테스트하려면 `npm --prefix packages/server/scripts test` 명령을 사용하세요.
 - 프런트엔드 작업을 시작할 때는 Next.js 환경을 추가로 구성하고, 공통 컴포넌트를 재사용하도록 설계합니다.
 
 ## 4. 파일 구조 규칙

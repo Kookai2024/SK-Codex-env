@@ -1,0 +1,22 @@
+{
+  "name": "team-todo-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/server/scripts"
+  ],
+  "scripts": {
+    "test": "npm run test:attendance && npm run test:scripts",
+    "test:attendance": "node --test attendance/tests",
+    "test:scripts": "npm --prefix packages/server/scripts test"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "luxon": "^3.4.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "supertest": "^6.3.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
