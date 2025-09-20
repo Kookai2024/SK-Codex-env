@@ -1,702 +1,726 @@
 {
-  "users": {
-    "id": "users",
-    "name": "users",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "name",
-        "name": "name",
-        "type": "text",
-        "required": true,
-        "presentable": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
+  "collections": [
+    {
+      "id": "users",
+      "name": "users",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "name",
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "presentable": true,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "email",
+          "name": "email",
+          "type": "email",
+          "required": true,
+          "presentable": true,
+          "unique": true,
+          "options": {
+            "exceptDomains": null,
+            "onlyDomains": null
+          }
+        },
+        {
+          "id": "password",
+          "name": "password",
+          "type": "text",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": 6,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "role",
+          "name": "role",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "admin",
+              "member",
+              "guest"
+            ],
+            "displayFields": null
+          }
+        },
+        {
+          "id": "department",
+          "name": "department",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "join_date",
+          "name": "join_date",
+          "type": "date",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
         }
-      },
-      {
-        "id": "email",
-        "name": "email",
-        "type": "email",
-        "required": true,
-        "presentable": true,
-        "unique": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
+      ],
+      "indexes": [
+        "CREATE INDEX idx_users_email ON users (email)",
+        "CREATE INDEX idx_users_role ON users (role)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\")",
+      "updateRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\") || @request.auth.id = id",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "projects",
+      "name": "projects",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "code",
+          "name": "code",
+          "type": "text",
+          "required": true,
+          "presentable": true,
+          "unique": true,
+          "options": {
+            "min": 4,
+            "max": 4,
+            "pattern": "^[A-Z0-9]{4}$"
+          }
+        },
+        {
+          "id": "name",
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "status",
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "active",
+              "completed",
+              "on_hold",
+              "cancelled"
+            ],
+            "displayFields": null
+          }
+        },
+        {
+          "id": "manager",
+          "name": "manager",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": false,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "description",
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
         }
-      },
-      {
-        "id": "password",
-        "name": "password",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": 6,
-          "max": null,
-          "pattern": ""
+      ],
+      "indexes": [
+        "CREATE INDEX idx_projects_code ON projects (code)",
+        "CREATE INDEX idx_projects_status ON projects (status)",
+        "CREATE INDEX idx_projects_manager ON projects (manager)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "@request.auth.role = \"admin\"",
+      "updateRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "project_members",
+      "name": "project_members",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "project",
+          "name": "project",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "projects",
+            "cascadeDelete": true,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "code",
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "user",
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": true,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "role",
+          "name": "role",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "editor",
+              "viewer"
+            ],
+            "displayFields": null
+          }
         }
-      },
-      {
-        "id": "role",
-        "name": "role",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "admin",
-            "member",
-            "guest"
-          ],
-          "displayFields": null
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_project_members_unique ON project_members (project, user)",
+        "CREATE INDEX idx_project_members_project ON project_members (project)",
+        "CREATE INDEX idx_project_members_user ON project_members (user)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\")",
+      "updateRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\")",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "todos",
+      "name": "todos",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "user",
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": true,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "project",
+          "name": "project",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "projects",
+            "cascadeDelete": true,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "code",
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "title",
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "description",
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "issue",
+          "name": "issue",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "solution",
+          "name": "solution",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "decision",
+          "name": "decision",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "status",
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "\uc5c5\ubb34\uc804",
+              "\uc124\uacc4\uc911",
+              "\ubcf4\ub958\uc911",
+              "\ubc1c\uc8fc\uc644\ub8cc",
+              "\uc785\uace0\uc608\uc815"
+            ],
+            "displayFields": null
+          }
+        },
+        {
+          "id": "notes",
+          "name": "notes",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "due_date",
+          "name": "due_date",
+          "type": "date",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
+        },
+        {
+          "id": "locked_at",
+          "name": "locked_at",
+          "type": "date",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
         }
-      },
-      {
-        "id": "department",
-        "name": "department",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
+      ],
+      "indexes": [
+        "CREATE INDEX idx_todos_user ON todos (user)",
+        "CREATE INDEX idx_todos_project ON todos (project)",
+        "CREATE INDEX idx_todos_status ON todos (status)",
+        "CREATE INDEX idx_todos_due_date ON todos (due_date)",
+        "CREATE INDEX idx_todos_locked_at ON todos (locked_at)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "(@request.auth.id != \"\" && @request.auth.role = \"member\") || @request.auth.role = \"admin\"",
+      "updateRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\" && locked_at = \"\")",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "attendance",
+      "name": "attendance",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "user",
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": true,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "type",
+          "name": "type",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "in",
+              "out"
+            ],
+            "displayFields": null
+          }
+        },
+        {
+          "id": "server_time",
+          "name": "server_time",
+          "type": "date",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
+        },
+        {
+          "id": "ip_address",
+          "name": "ip_address",
+          "type": "text",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
         }
-      },
-      {
-        "id": "join_date",
-        "name": "join_date",
-        "type": "date",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
+      ],
+      "indexes": [
+        "CREATE INDEX idx_attendance_user ON attendance (user)",
+        "CREATE INDEX idx_attendance_server_time ON attendance (server_time)",
+        "CREATE INDEX idx_attendance_type ON attendance (type)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "@request.auth.id != \"\"",
+      "updateRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "weekly_reports",
+      "name": "weekly_reports",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "week_start",
+          "name": "week_start",
+          "type": "date",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
+        },
+        {
+          "id": "week_end",
+          "name": "week_end",
+          "type": "date",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
+        },
+        {
+          "id": "project",
+          "name": "project",
+          "type": "relation",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "projects",
+            "cascadeDelete": false,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "code",
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "user",
+          "name": "user",
+          "type": "relation",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": false,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "file_url",
+          "name": "file_url",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "generated_at",
+          "name": "generated_at",
+          "type": "date",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": "",
+            "max": ""
+          }
         }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_users_email ON users (email)",
-      "CREATE INDEX idx_users_role ON users (role)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\")",
-    "updateRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\") || @request.auth.id = id",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "projects": {
-    "id": "projects",
-    "name": "projects",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "code",
-        "name": "code",
-        "type": "text",
-        "required": true,
-        "presentable": true,
-        "unique": true,
-        "options": {
-          "min": 4,
-          "max": 4,
-          "pattern": "^[A-Z0-9]{4}$"
+      ],
+      "indexes": [
+        "CREATE INDEX idx_weekly_reports_week_start ON weekly_reports (week_start)",
+        "CREATE INDEX idx_weekly_reports_project ON weekly_reports (project)",
+        "CREATE INDEX idx_weekly_reports_user ON weekly_reports (user)"
+      ],
+      "listRule": "@request.auth.id != \"\"",
+      "viewRule": "@request.auth.id != \"\"",
+      "createRule": "@request.auth.role = \"admin\"",
+      "updateRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\""
+    },
+    {
+      "id": "audit_logs",
+      "name": "audit_logs",
+      "type": "base",
+      "system": false,
+      "schema": [
+        {
+          "id": "user",
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "collectionId": "users",
+            "cascadeDelete": false,
+            "minSelect": null,
+            "maxSelect": 1,
+            "displayFields": [
+              "name"
+            ]
+          }
+        },
+        {
+          "id": "action",
+          "name": "action",
+          "type": "select",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "maxSelect": 1,
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "login",
+              "logout",
+              "punch_in",
+              "punch_out"
+            ],
+            "displayFields": null
+          }
+        },
+        {
+          "id": "entity_type",
+          "name": "entity_type",
+          "type": "text",
+          "required": true,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "entity_id",
+          "name": "entity_id",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "details",
+          "name": "details",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
+        },
+        {
+          "id": "ip_address",
+          "name": "ip_address",
+          "type": "text",
+          "required": false,
+          "presentable": false,
+          "unique": false,
+          "options": {
+            "min": null,
+            "max": null,
+            "pattern": ""
+          }
         }
-      },
-      {
-        "id": "name",
-        "name": "name",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "status",
-        "name": "status",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "active",
-            "completed",
-            "on_hold",
-            "cancelled"
-          ],
-          "displayFields": null
-        }
-      },
-      {
-        "id": "manager",
-        "name": "manager",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "description",
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_projects_code ON projects (code)",
-      "CREATE INDEX idx_projects_status ON projects (status)",
-      "CREATE INDEX idx_projects_manager ON projects (manager)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "@request.auth.role = \"admin\"",
-    "updateRule": "@request.auth.role = \"admin\"",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "project_members": {
-    "id": "project_members",
-    "name": "project_members",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "project",
-        "name": "project",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "projects",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["code", "name"]
-        }
-      },
-      {
-        "id": "user",
-        "name": "user",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "role",
-        "name": "role",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "editor",
-            "viewer"
-          ],
-          "displayFields": null
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX idx_project_members_unique ON project_members (project, user)",
-      "CREATE INDEX idx_project_members_project ON project_members (project)",
-      "CREATE INDEX idx_project_members_user ON project_members (user)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\")",
-    "updateRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\")",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "todos": {
-    "id": "todos",
-    "name": "todos",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "user",
-        "name": "user",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "project",
-        "name": "project",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "projects",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["code", "name"]
-        }
-      },
-      {
-        "id": "title",
-        "name": "title",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "description",
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "issue",
-        "name": "issue",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "solution",
-        "name": "solution",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "decision",
-        "name": "decision",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "status",
-        "name": "status",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "업무전",
-            "설계중",
-            "보류중",
-            "발주완료",
-            "입고예정"
-          ],
-          "displayFields": null
-        }
-      },
-      {
-        "id": "notes",
-        "name": "notes",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "due_date",
-        "name": "due_date",
-        "type": "date",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "locked_at",
-        "name": "locked_at",
-        "type": "date",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_todos_user ON todos (user)",
-      "CREATE INDEX idx_todos_project ON todos (project)",
-      "CREATE INDEX idx_todos_status ON todos (status)",
-      "CREATE INDEX idx_todos_due_date ON todos (due_date)",
-      "CREATE INDEX idx_todos_locked_at ON todos (locked_at)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "(@request.auth.id != \"\" && @request.auth.role = \"member\") || @request.auth.role = \"admin\"",
-    "updateRule": "(@request.auth.role = \"admin\") || (@request.auth.id = user && @request.auth.role = \"member\" && locked_at = \"\")",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "attendance": {
-    "id": "attendance",
-    "name": "attendance",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "user",
-        "name": "user",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "type",
-        "name": "type",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "in",
-            "out"
-          ],
-          "displayFields": null
-        }
-      },
-      {
-        "id": "server_time",
-        "name": "server_time",
-        "type": "date",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "ip_address",
-        "name": "ip_address",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_attendance_user ON attendance (user)",
-      "CREATE INDEX idx_attendance_server_time ON attendance (server_time)",
-      "CREATE INDEX idx_attendance_type ON attendance (type)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "@request.auth.id != \"\"",
-    "updateRule": "@request.auth.role = \"admin\"",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "weekly_reports": {
-    "id": "weekly_reports",
-    "name": "weekly_reports",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "week_start",
-        "name": "week_start",
-        "type": "date",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "week_end",
-        "name": "week_end",
-        "type": "date",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "project",
-        "name": "project",
-        "type": "relation",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "projects",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["code", "name"]
-        }
-      },
-      {
-        "id": "user",
-        "name": "user",
-        "type": "relation",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "file_url",
-        "name": "file_url",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "generated_at",
-        "name": "generated_at",
-        "type": "date",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_weekly_reports_week_start ON weekly_reports (week_start)",
-      "CREATE INDEX idx_weekly_reports_project ON weekly_reports (project)",
-      "CREATE INDEX idx_weekly_reports_user ON weekly_reports (user)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "@request.auth.role = \"admin\"",
-    "updateRule": "@request.auth.role = \"admin\"",
-    "deleteRule": "@request.auth.role = \"admin\""
-  },
-  "audit_logs": {
-    "id": "audit_logs",
-    "name": "audit_logs",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "user",
-        "name": "user",
-        "type": "relation",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "collectionId": "users",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": ["name"]
-        }
-      },
-      {
-        "id": "action",
-        "name": "action",
-        "type": "select",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "create",
-            "update",
-            "delete",
-            "login",
-            "logout",
-            "punch_in",
-            "punch_out"
-          ],
-          "displayFields": null
-        }
-      },
-      {
-        "id": "entity_type",
-        "name": "entity_type",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "entity_id",
-        "name": "entity_id",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "details",
-        "name": "details",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "ip_address",
-        "name": "ip_address",
-        "type": "text",
-        "required": false,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX idx_audit_logs_user ON audit_logs (user)",
-      "CREATE INDEX idx_audit_logs_action ON audit_logs (action)",
-      "CREATE INDEX idx_audit_logs_entity_type ON audit_logs (entity_type)",
-      "CREATE INDEX idx_audit_logs_created ON audit_logs (created)"
-    ],
-    "listRule": "@request.auth.role = \"admin\"",
-    "viewRule": "@request.auth.role = \"admin\"",
-    "createRule": "@request.auth.id != \"\"",
-    "updateRule": "@request.auth.role = \"admin\"",
-    "deleteRule": "@request.auth.role = \"admin\""
-  }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_audit_logs_user ON audit_logs (user)",
+        "CREATE INDEX idx_audit_logs_action ON audit_logs (action)",
+        "CREATE INDEX idx_audit_logs_entity_type ON audit_logs (entity_type)",
+        "CREATE INDEX idx_audit_logs_created ON audit_logs (created)"
+      ],
+      "listRule": "@request.auth.role = \"admin\"",
+      "viewRule": "@request.auth.role = \"admin\"",
+      "createRule": "@request.auth.id != \"\"",
+      "updateRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\""
+    }
+  ],
+  "deleted": []
 }
