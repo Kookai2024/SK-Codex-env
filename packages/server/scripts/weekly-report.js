@@ -16,10 +16,8 @@
  * - node weekly-report.js --week=2024-12-20  # 특정 주
  */
 
-const PocketBase = require('pocketbase');
 const fs = require('fs');
 const path = require('path');
-const XLSX = require('xlsx');
 
 // 주간 보고서 스크립트의 목업 모드 환경 변수 키
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
@@ -32,6 +30,10 @@ const TODO_STATUS_COLUMNS = [
   { key: 'po_placed', label: '발주완료' },
   { key: 'incoming', label: '입고예정' }
 ];
+
+// 프로젝트 진행률 계산 시 완료 상태로 취급되는 할 일 상태 키를 상수로 분리한다.
+const TODO_COMPLETED_STATUS_KEY =
+  TODO_STATUS_COLUMNS.find((column) => column.key === 'po_placed')?.key || 'po_placed';
 
 /**
  * PocketBase 클라이언트 생성 함수
@@ -80,6 +82,8 @@ function createPocketBaseClient() {
   }
 
   // 기본 동작으로 실제 PocketBase 클라이언트를 생성한다.
+  // 목업 모드가 아닐 때만 PocketBase 모듈을 동적으로 로드해 테스트 환경에서 의존성을 피한다.
+  const PocketBase = require('pocketbase');
   return new PocketBase(POCKETBASE_URL);
 }
 
@@ -183,9 +187,35 @@ async function getUserTodosReport(weekStart, weekEnd) {
 /**
  * 프로젝트별 진행률 수집 함수
  */
+/**
+ * 프로젝트 진행률 지표를 계산하는 헬퍼 함수
+ * @param {Array} todos 프로젝트에 속한 할 일 목록
+ * @param {Date} weekStart 주간 시작 시각
+ * @param {Date} weekEnd 주간 종료 시각
+ * @returns {Object} 총 할 일 수, 완료된 할 일 수, 진행률, 주간 수정 건수를 담은 객체
+ */
+function calculateProjectProgressMetrics(todos, weekStart, weekEnd) {
+  // 총 할 일 수를 계산한다.
+  const totalTodos = todos.length;
+
+  // 완료 상태 키에 해당하는 할 일을 집계한다.
+  const completedTodos = todos.filter((todo) => todo.status === TODO_COMPLETED_STATUS_KEY).length;
+
+  // 진행률은 완료/전체 비율에 기반해 백분율로 반올림한다.
+  const progressPercentage = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
+
+  // 해당 주간 내에서 수정된 할 일을 카운트한다.
+  const weekTodos = todos.filter((todo) => {
+    const updated = new Date(todo.updated);
+    return updated >= weekStart && updated <= weekEnd;
+  }).length;
+
+  return { totalTodos, completedTodos, progressPercentage, weekTodos };
+}
+
 async function getProjectProgressReport(weekStart, weekEnd) {
   console.log('📊 프로젝트별 진행률 수집 중...');
-  
+
   try {
     // 모든 프로젝트 조회
     const projects = await pb.collection('projects').getFullList({
@@ -201,15 +231,8 @@ async function getProjectProgressReport(weekStart, weekEnd) {
         expand: 'user'
       });
       
-      const totalTodos = todos.length;
-      const completedTodos = todos.filter(todo => todo.status === '발주완료').length;
-      const progressPercentage = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
-      
-      // 해당 주간에 수정된 할 일 수
-      const weekTodos = todos.filter(todo => {
-        const updated = new Date(todo.updated);
-        return updated >= weekStart && updated <= weekEnd;
-      }).length;
+      const { totalTodos, completedTodos, progressPercentage, weekTodos } =
+        calculateProjectProgressMetrics(todos, weekStart, weekEnd);
       
       projectProgress[project.id] = {
         code: project.code,
@@ -344,9 +367,19 @@ function generateCSVReport(weekStart, weekEnd, userTodos, projectProgress, atten
  */
 function generateExcelReport(weekStart, weekEnd, userTodos, projectProgress, attendanceSummary) {
   console.log('📊 Excel 보고서 생성 중...');
-  
+
   const weekStr = weekStart.toISOString().split('T')[0];
   const excelFile = path.join(REPORTS_DIR, `weekly-report-${weekStr}.xlsx`);
+
+  // 목업 모드에서는 외부 모듈 없이 더미 파일을 생성해 테스트 의존성을 줄인다.
+  if (process.env[WEEKLY_REPORT_MOCK_FLAG] === 'true') {
+    fs.writeFileSync(excelFile, 'mock excel content', 'utf8');
+    console.log(`🧪 목업 모드: Excel 보고서를 대체 파일로 생성했습니다: ${excelFile}`);
+    return excelFile;
+  }
+
+  // 실제 환경에서만 Excel 모듈을 로드한다.
+  const XLSX = require('xlsx');
   
   // 새로운 워크북 생성
   const wb = XLSX.utils.book_new();
@@ -507,9 +540,10 @@ if (require.main === module) {
   generateWeeklyReport(weekDate);
 }
 
-module.exports = { 
-  generateWeeklyReport, 
-  getUserTodosReport, 
-  getProjectProgressReport, 
-  getAttendanceReport 
+module.exports = {
+  generateWeeklyReport,
+  getUserTodosReport,
+  getProjectProgressReport,
+  getAttendanceReport,
+  calculateProjectProgressMetrics
 };

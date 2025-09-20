@@ -19,6 +19,12 @@ const REPORTS_DIR = path.join(__dirname, '..', '..', 'reports');
 const SCRIPTS_DIR = path.join(__dirname, '..');
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
 
+// 모듈 로드시 PocketBase 네트워크 호출을 피하기 위해 목업 모드를 활성화한다.
+process.env[WEEKLY_REPORT_MOCK_FLAG] = 'true';
+
+// 진행률 계산 헬퍼를 테스트하기 위해 주간 보고서 스크립트를 로드한다.
+const { calculateProjectProgressMetrics } = require('../weekly-report.js');
+
 /**
  * 현재 날짜 기준으로 주간 보고서에서 사용되는 ISO 형식의 주간 시작일을 계산한다.
  * @param {Date} date 기준 날짜(테스트 중 고정 값 지정 가능)
@@ -63,4 +69,29 @@ test('weekly-report without arguments uses the current week range', async (t) =>
 
   assert.ok(fs.existsSync(expectedCsvFile), 'CSV 보고서가 현재 주간 시작일 파일명으로 생성되어야 합니다.');
   assert.ok(fs.existsSync(expectedExcelFile), 'XLSX 보고서가 현재 주간 시작일 파일명으로 생성되어야 합니다.');
+});
+
+// po_placed 상태를 완료로 인식하는지 확인하는 테스트
+test('calculateProjectProgressMetrics treats po_placed todos as completed work', () => {
+  // 주간 경계값을 고정해 테스트 재현성을 확보한다.
+  const weekStart = new Date('2024-01-01T00:00:00.000Z');
+  const weekEnd = new Date('2024-01-07T23:59:59.999Z');
+
+  // 하나의 완료된 할 일과 하나의 진행 중인 할 일을 구성한다.
+  const todos = [
+    {
+      status: 'po_placed',
+      updated: '2024-01-03T12:00:00.000Z'
+    },
+    {
+      status: 'design',
+      updated: '2024-01-04T12:00:00.000Z'
+    }
+  ];
+
+  // 계산된 결과가 완료 건수를 포함하는지 검증한다.
+  const result = calculateProjectProgressMetrics(todos, weekStart, weekEnd);
+  assert.equal(result.totalTodos, 2, '총 할 일 수는 2건이어야 한다.');
+  assert.equal(result.completedTodos, 1, '완료된 할 일 수는 po_placed 1건이어야 한다.');
+  assert.ok(result.progressPercentage > 0, '완료된 할 일이 있으므로 진행률은 0보다 커야 한다.');
 });
