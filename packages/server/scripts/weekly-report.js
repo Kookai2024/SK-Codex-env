@@ -16,13 +16,15 @@
  * - node weekly-report.js --week=2024-12-20  # 특정 주
  */
 
-const PocketBase = require('pocketbase');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 
 // 주간 보고서 스크립트의 목업 모드 환경 변수 키
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
+
+// PocketBase SDK는 목업 모드가 아닐 때만 동적으로 로드한다.
+const PocketBase = process.env[WEEKLY_REPORT_MOCK_FLAG] === 'true' ? null : require('pocketbase');
 
 // Todo 상태별 CSV/XLSX 헤더 구성을 위한 상수 배열이다.
 const TODO_STATUS_COLUMNS = [
@@ -32,6 +34,9 @@ const TODO_STATUS_COLUMNS = [
   { key: 'po_placed', label: '발주완료' },
   { key: 'incoming', label: '입고예정' }
 ];
+
+// 진행률 계산 시 재사용할 완료 상태 키 상수를 정의해 매직 문자열을 제거한다.
+const TODO_COMPLETED_STATUS_KEY = 'po_placed';
 
 /**
  * PocketBase 클라이언트 생성 함수
@@ -183,26 +188,27 @@ async function getUserTodosReport(weekStart, weekEnd) {
 /**
  * 프로젝트별 진행률 수집 함수
  */
-async function getProjectProgressReport(weekStart, weekEnd) {
+async function getProjectProgressReport(weekStart, weekEnd, pocketBaseClient = pb) {
   console.log('📊 프로젝트별 진행률 수집 중...');
-  
+
   try {
     // 모든 프로젝트 조회
-    const projects = await pb.collection('projects').getFullList({
+    const projects = await pocketBaseClient.collection('projects').getFullList({
       expand: 'manager'
     });
-    
+
     const projectProgress = {};
-    
+
     for (const project of projects) {
       // 프로젝트별 할 일 현황 조회
-      const todos = await pb.collection('todos').getFullList({
+      const todos = await pocketBaseClient.collection('todos').getFullList({
         filter: `project = "${project.id}"`,
         expand: 'user'
       });
-      
+
       const totalTodos = todos.length;
-      const completedTodos = todos.filter(todo => todo.status === '발주완료').length;
+      // 통일된 완료 상태 키 상수를 활용해 진행률을 계산한다.
+      const completedTodos = todos.filter(todo => todo.status === TODO_COMPLETED_STATUS_KEY).length;
       const progressPercentage = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
       
       // 해당 주간에 수정된 할 일 수
