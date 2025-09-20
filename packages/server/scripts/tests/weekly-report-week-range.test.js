@@ -19,6 +19,22 @@ const REPORTS_DIR = path.join(__dirname, '..', '..', 'reports');
 const SCRIPTS_DIR = path.join(__dirname, '..');
 const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
 
+// 모듈 로드시 항상 목업 클라이언트를 사용하도록 환경 변수를 설정한다.
+const previousMockFlag = process.env[WEEKLY_REPORT_MOCK_FLAG];
+process.env[WEEKLY_REPORT_MOCK_FLAG] = 'true';
+
+// 주간 보고서 모듈에서 진행률 계산 함수를 가져온다.
+const { getProjectProgressReport } = require('../weekly-report');
+
+// 테스트 종료 후 목업 환경 변수 값을 원래대로 복원한다.
+test.after(() => {
+  if (previousMockFlag === undefined) {
+    delete process.env[WEEKLY_REPORT_MOCK_FLAG];
+  } else {
+    process.env[WEEKLY_REPORT_MOCK_FLAG] = previousMockFlag;
+  }
+});
+
 /**
  * 현재 날짜 기준으로 주간 보고서에서 사용되는 ISO 형식의 주간 시작일을 계산한다.
  * @param {Date} date 기준 날짜(테스트 중 고정 값 지정 가능)
@@ -63,4 +79,68 @@ test('weekly-report without arguments uses the current week range', async (t) =>
 
   assert.ok(fs.existsSync(expectedCsvFile), 'CSV 보고서가 현재 주간 시작일 파일명으로 생성되어야 합니다.');
   assert.ok(fs.existsSync(expectedExcelFile), 'XLSX 보고서가 현재 주간 시작일 파일명으로 생성되어야 합니다.');
+});
+
+// 프로젝트 진행률 계산이 발주 완료 상태를 기준으로 동작하는지 검증하는 테스트이다.
+test('getProjectProgressReport treats po_placed todos as completed work', async () => {
+  const weekStart = new Date('2024-01-01T00:00:00.000Z');
+  const weekEnd = new Date('2024-01-07T23:59:59.999Z');
+
+  // PocketBase 호출을 대체할 목업 클라이언트를 구성한다.
+  const mockPocketBase = {
+    collection(collectionName) {
+      if (collectionName === 'projects') {
+        return {
+          async getFullList() {
+            return [
+              {
+                id: 'project-1',
+                code: 'PRJ-1',
+                name: '테스트 프로젝트',
+                status: 'active',
+                expand: { manager: { name: 'PM Kim' } }
+              }
+            ];
+          }
+        };
+      }
+
+      if (collectionName === 'todos') {
+        return {
+          async getFullList() {
+            return [
+              {
+                id: 'todo-1',
+                project: 'project-1',
+                title: '완료된 할 일',
+                status: 'po_placed',
+                updated: weekStart.toISOString(),
+                due_date: weekEnd.toISOString(),
+                expand: { user: { name: '사용자A' } }
+              },
+              {
+                id: 'todo-2',
+                project: 'project-1',
+                title: '진행 중 할 일',
+                status: 'design',
+                updated: weekStart.toISOString(),
+                due_date: weekEnd.toISOString(),
+                expand: { user: { name: '사용자B' } }
+              }
+            ];
+          }
+        };
+      }
+
+      throw new Error(`예상치 못한 컬렉션 요청: ${collectionName}`);
+    }
+  };
+
+  const projectProgress = await getProjectProgressReport(weekStart, weekEnd, mockPocketBase);
+  const projectStats = projectProgress['project-1'];
+
+  assert.ok(projectStats, '프로젝트 진행률 데이터가 반환되어야 합니다.');
+  assert.equal(projectStats.totalTodos, 2, '총 할 일 개수는 2개여야 합니다.');
+  assert.equal(projectStats.completedTodos, 1, 'po_placed 상태의 할 일은 완료로 계산되어야 합니다.');
+  assert.equal(projectStats.progressPercentage, 50, '완료된 할 일 비율은 50%로 계산되어야 합니다.');
 });
