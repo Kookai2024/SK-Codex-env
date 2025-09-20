@@ -2,8 +2,10 @@
   "users": {
     "id": "users",
     "name": "users",
-    "type": "base",
+    "type": "auth",
     "system": false,
+    "emailVisibility": false,
+    "manageRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\") || @request.auth.id = id",
     "schema": [
       {
         "id": "name",
@@ -28,19 +30,6 @@
         "options": {
           "exceptDomains": null,
           "onlyDomains": null
-        }
-      },
-      {
-        "id": "password",
-        "name": "password",
-        "type": "text",
-        "required": true,
-        "presentable": false,
-        "unique": false,
-        "options": {
-          "min": 6,
-          "max": null,
-          "pattern": ""
         }
       },
       {
@@ -94,7 +83,17 @@
     "viewRule": "@request.auth.id != \"\"",
     "createRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\")",
     "updateRule": "(@request.auth.id != \"\" && @request.auth.role = \"admin\") || @request.auth.id = id",
-    "deleteRule": "@request.auth.role = \"admin\""
+    "deleteRule": "@request.auth.role = \"admin\"",
+    "options": {
+      "allowEmailAuth": true,
+      "allowOAuth2Auth": false,
+      "allowUsernameAuth": false,
+      "exceptDomains": null,
+      "minPasswordLength": 6,
+      "onlyDomains": null,
+      "requireEmail": true,
+      "requireUsername": false
+    }
   },
   "projects": {
     "id": "projects",
