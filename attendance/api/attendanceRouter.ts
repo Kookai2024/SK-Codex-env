@@ -9,10 +9,11 @@ import type { Request, Response } from 'express';
 import express from 'express';
 import { z } from 'zod';
 import {
-  type AttendanceServiceDependencies,
+  type AttendanceRouterDependencies,
   type AttendanceUserContext
 } from '../types';
 import { createAttendanceService } from './attendanceService';
+import { createLeaveCalendarService } from './leaveCalendarService';
 
 // 헤더 이름을 상수로 관리해 하드코딩을 피한다.
 const HEADER_NAMES = {
@@ -67,9 +68,15 @@ function ensureAuthenticated(req: Request, res: Response): AttendanceUserContext
  * 출퇴근 REST 라우터를 생성한다.
  * @param deps AttendanceServiceDependencies
  */
-export function createAttendanceRouter(deps: AttendanceServiceDependencies) {
+export function createAttendanceRouter(deps: AttendanceRouterDependencies) {
   const router = express.Router();
   const service = createAttendanceService(deps);
+  const calendarService = deps.leaveScheduleRepository
+    ? createLeaveCalendarService({
+        repository: deps.leaveScheduleRepository,
+        timeProvider: deps.timeProvider
+      })
+    : null;
 
   // JSON 파싱 미들웨어를 라우터 수준에서 적용한다.
   router.use(express.json());
@@ -82,6 +89,33 @@ export function createAttendanceRouter(deps: AttendanceServiceDependencies) {
     }
 
     const result = await service.getTodayStatus(user);
+    res.status(result.ok ? 200 : 400).json(result);
+  });
+
+  // 근태 캘린더 조회 엔드포인트
+  router.get('/attendance/calendar', async (req, res) => {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    // 캘린더 서비스가 주입되지 않았다면 기능이 비활성화된 것으로 간주한다.
+    if (!calendarService) {
+      res.status(503).json({
+        ok: false,
+        data: null,
+        error: '근태 캘린더 기능이 아직 구성되지 않았습니다.',
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
+    const yearParam = Array.isArray(req.query.year) ? req.query.year[0] : req.query.year;
+    const monthParam = Array.isArray(req.query.month) ? req.query.month[0] : req.query.month;
+    const year = Number(yearParam);
+    const month = Number(monthParam);
+
+    const result = await calendarService.getMonthlyCalendar(user, year, month);
     res.status(result.ok ? 200 : 400).json(result);
   });
 

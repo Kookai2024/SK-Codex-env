@@ -10,9 +10,10 @@ const assert = require('node:assert/strict');
 const {
   determinePunchState,
   getSeoulDayBoundaries,
-  validatePunchTransition
+  validatePunchTransition,
+  buildLeaveCalendarMatrix
 } = require('../utils.ts');
-const { ATTENDANCE_TYPES } = require('../types.ts');
+const { ATTENDANCE_TYPES, ATTENDANCE_LEAVE_TYPES } = require('../types.ts');
 
 // 테스트에서 사용할 고정 ISO 타임스탬프를 상수로 정의한다.
 const SAMPLE_TIMESTAMP_IN = '2025-09-26T00:00:00.000Z';
@@ -112,4 +113,37 @@ test('getSeoulDayBoundaries returns start/end range in UTC', () => {
   // 종료 시각은 당일 14:59:59.999 UTC 근처이다.
   assert.equal(boundaries.endUtcIso.startsWith('2025-09-26T14:59:59'), true);
   assert.equal(boundaries.isoDate, '2025-09-26');
+});
+
+// 월간 캘린더 생성 시 휴무 일정이 올바르게 반영되는지 검증한다.
+test('buildLeaveCalendarMatrix marks leave entries with shading', () => {
+  const calendar = buildLeaveCalendarMatrix(2025, 9, [
+    {
+      id: 'leave-1',
+      userId: 'user-1',
+      date: '2025-09-10',
+      leaveType: ATTENDANCE_LEAVE_TYPES.ANNUAL_LEAVE,
+      isFullDay: true,
+      note: null
+    },
+    {
+      id: 'leave-2',
+      userId: 'user-1',
+      date: '2025-09-11',
+      leaveType: ATTENDANCE_LEAVE_TYPES.HALF_DAY_LEAVE,
+      isFullDay: false,
+      note: null
+    }
+  ]);
+
+  const flattened = calendar.flat();
+  const fullDay = flattened.find((cell) => cell.date === '2025-09-10');
+  const halfDay = flattened.find((cell) => cell.date === '2025-09-11');
+
+  assert.equal(fullDay.shading, 'full');
+  assert.equal(fullDay.label, '연차');
+  assert.equal(halfDay.shading, 'half');
+  // 캘린더는 항상 6주(42일) 구조로 반환되어야 한다.
+  assert.equal(calendar.length, 6);
+  assert.equal(calendar[0].length, 7);
 });

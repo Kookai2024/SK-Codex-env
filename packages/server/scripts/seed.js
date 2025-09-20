@@ -23,6 +23,16 @@ const POCKETBASE_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 // PocketBase 클라이언트 인스턴스 생성
 const pb = new PocketBase(POCKETBASE_URL);
 
+// 근태 휴무 타입 상수를 정의한다.
+const LEAVE_TYPES = {
+  REGULAR_WORK: 'regular_work',
+  ANNUAL_LEAVE: 'annual_leave',
+  HALF_DAY_LEAVE: 'half_day_leave',
+  BUSINESS_TRIP: 'business_trip',
+  TRAINING: 'training',
+  SICK_LEAVE: 'sick_leave'
+};
+
 /**
  * 에러 처리 함수
  */
@@ -303,7 +313,7 @@ async function createSampleTodos(users, projects) {
       issue: '기존 인증 시스템과의 호환성 문제',
       solution: 'JWT 토큰 기반 인증으로 전환',
       decision: '기존 시스템 유지하면서 점진적 전환',
-      status: '설계중',
+      status: 'design',
       due_date: '2024-12-31',
       notes: '우선순위 높음'
     },
@@ -315,7 +325,7 @@ async function createSampleTodos(users, projects) {
       issue: '브랜드 가이드라인 업데이트 필요',
       solution: '새로운 브랜드 가이드라인 적용',
       decision: '디자인 시스템 통일성 확보',
-      status: '업무전',
+      status: 'prework',
       due_date: '2024-12-25',
       notes: '클라이언트 검토 대기'
     },
@@ -327,7 +337,7 @@ async function createSampleTodos(users, projects) {
       issue: '크로스 플랫폼 호환성',
       solution: 'React Native 최신 버전 사용',
       decision: '하이브리드 앱으로 개발',
-      status: '설계중',
+      status: 'design',
       due_date: '2024-12-20',
       notes: '프로토타입 먼저 제작'
     },
@@ -339,7 +349,7 @@ async function createSampleTodos(users, projects) {
       issue: '자동화 테스트 도구 선정 필요',
       solution: 'Detox 사용',
       decision: '자동화 테스트 비율 80% 목표',
-      status: '업무전',
+      status: 'prework',
       due_date: '2024-12-22',
       notes: '개발팀과 협의 필요'
     },
@@ -351,7 +361,7 @@ async function createSampleTodos(users, projects) {
       issue: '다양한 레거시 시스템 존재',
       solution: '마이크로서비스 아키텍처 적용',
       decision: '단계적 통합 진행',
-      status: '보류중',
+      status: 'hold',
       due_date: '2025-01-15',
       notes: '예산 검토 필요'
     }
@@ -424,6 +434,58 @@ async function createSampleAttendance(users) {
 }
 
 /**
+ * 샘플 휴무 일정 생성 함수
+ */
+async function createSampleLeaveSchedules(users) {
+  console.log('📅 샘플 휴무 일정 생성 중...');
+
+  const adminUser = users.find((user) => user.role === 'admin');
+  const approvalId = adminUser ? adminUser.id : null;
+
+  const leaveEntries = [
+    {
+      user: users[1].id,
+      date: '2025-09-10',
+      leave_type: LEAVE_TYPES.ANNUAL_LEAVE,
+      is_full_day: true,
+      note: '추석 연차',
+      approved_by: approvalId
+    },
+    {
+      user: users[2].id,
+      date: '2025-09-12',
+      leave_type: LEAVE_TYPES.HALF_DAY_LEAVE,
+      is_full_day: false,
+      note: '건강 검진',
+      approved_by: approvalId
+    },
+    {
+      user: users[3].id,
+      date: '2025-09-18',
+      leave_type: LEAVE_TYPES.BUSINESS_TRIP,
+      is_full_day: true,
+      note: '고객사 방문',
+      approved_by: approvalId
+    }
+  ];
+
+  for (const entry of leaveEntries) {
+    try {
+      await pb.collection('leave_schedules').create(entry);
+    } catch (error) {
+      // 이미 존재하는 일정은 무시한다.
+      if (error.status === 400) {
+        console.log(`⚠️  휴무 일정 중복: ${entry.user} ${entry.date}`);
+        continue;
+      }
+      handleError(error, '휴무 일정 생성');
+    }
+  }
+
+  console.log(`✅ ${leaveEntries.length}건의 휴무 일정 생성 완료`);
+}
+
+/**
  * 사용자 로그인 검증 함수
  */
 async function verifyUserLogins(userCredentials) {
@@ -466,6 +528,7 @@ async function seed() {
     await createProjectMembers(userRecords, projects);
     await createSampleTodos(userRecords, projects);
     await createSampleAttendance(userRecords);
+    await createSampleLeaveSchedules(userRecords);
     await verifyUserLogins(userCredentials);
 
     console.log('\n🎉 시드 스크립트 완료!');
@@ -475,6 +538,7 @@ async function seed() {
     console.log('- 프로젝트 멤버십: 여러 개');
     console.log('- 할 일: 5개');
     console.log('- 출석 기록: 7일간');
+    console.log('- 휴무 일정: 3건');
     
     console.log('\n🔑 기본 계정 정보:');
     console.log('Admin: admin@company.com / admin123!');
@@ -500,5 +564,6 @@ module.exports = {
   createProjectMembers,
   createSampleTodos,
   createSampleAttendance,
+  createSampleLeaveSchedules,
   verifyUserLogins
 };
