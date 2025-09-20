@@ -21,11 +21,64 @@ const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 
+// 주간 보고서 스크립트의 목업 모드 환경 변수 키
+const WEEKLY_REPORT_MOCK_FLAG = 'WEEKLY_REPORT_MOCK';
+
+/**
+ * PocketBase 클라이언트 생성 함수
+ *
+ * 실제 PocketBase 서버 대신 목업 클라이언트를 사용해야 하는 경우(예: 테스트)에는
+ * WEEKLY_REPORT_MOCK 환경 변수에 'true'를 입력해 네트워크 의존성을 제거한다.
+ */
+function createPocketBaseClient() {
+  // 목업 모드에서는 간단한 스텁 구현을 반환한다.
+  if (process.env[WEEKLY_REPORT_MOCK_FLAG] === 'true') {
+    console.warn('⚠️  WEEKLY_REPORT_MOCK 모드에서 PocketBase 호출이 목업으로 대체됩니다.');
+
+    return {
+      admins: {
+        // 관리자 인증을 생략하고 목업 메시지를 출력한다.
+        async authWithPassword() {
+          console.log('🤖 목업 모드: 관리자 인증이 생략되었습니다.');
+        }
+      },
+      // 사용되는 모든 컬렉션 요청을 빈 데이터 세트로 응답한다.
+      collection(collectionName) {
+        if (collectionName === 'weekly_reports') {
+          return {
+            async getFullList() {
+              return [];
+            },
+            async create() {
+              console.log('🤖 목업 모드: 주간 보고서 레코드 생성이 생략되었습니다.');
+              return { id: 'mock-weekly-report' };
+            }
+          };
+        }
+
+        return {
+          async getFullList() {
+            console.log(`🤖 목업 모드: '${collectionName}' 데이터는 비어 있는 배열로 반환됩니다.`);
+            return [];
+          },
+          async create() {
+            console.log(`🤖 목업 모드: '${collectionName}' 레코드 생성이 생략되었습니다.`);
+            return { id: 'mock-created-record' };
+          }
+        };
+      }
+    };
+  }
+
+  // 기본 동작으로 실제 PocketBase 클라이언트를 생성한다.
+  return new PocketBase(POCKETBASE_URL);
+}
+
 // PocketBase 서버 URL 설정 (기본값: http://127.0.0.1:8090)
 const POCKETBASE_URL = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
 
 // PocketBase 클라이언트 인스턴스 생성
-const pb = new PocketBase(POCKETBASE_URL);
+const pb = createPocketBaseClient();
 
 // 보고서 저장 디렉토리
 const REPORTS_DIR = path.join(__dirname, '..', 'reports');
@@ -382,12 +435,12 @@ async function generateWeeklyReport(weekDate = null) {
   try {
     console.log('📊 주간 보고서 생성 시작...');
     console.log(`📍 PocketBase 서버: ${POCKETBASE_URL}`);
-    
+
     // 보고서 디렉토리 확인/생성
     ensureReportsDir();
-    
-    // 주간 날짜 범위 계산
-    const { weekStart, weekEnd } = getWeekRange(weekDate);
+
+    // 주간 날짜 범위 계산 (주어진 날짜가 없으면 현재 날짜 사용)
+    const { weekStart, weekEnd } = weekDate ? getWeekRange(weekDate) : getWeekRange();
     console.log(`📅 보고서 기간: ${weekStart.toLocaleDateString('ko-KR')} ~ ${weekEnd.toLocaleDateString('ko-KR')}`);
     
     // 관리자로 인증
@@ -427,7 +480,7 @@ async function generateWeeklyReport(weekDate = null) {
 // 명령행 인수 파싱
 function parseArguments() {
   const args = process.argv.slice(2);
-  let weekDate = null;
+  let weekDate;
   
   for (const arg of args) {
     if (arg.startsWith('--week=')) {

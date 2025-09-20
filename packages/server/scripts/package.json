@@ -6,6 +6,7 @@
   "scripts": {
     "seed": "node seed.js",
     "weekly-report": "node weekly-report.js",
+    "test": "node --test tests",
     "install-deps": "npm install"
   },
   "keywords": [
