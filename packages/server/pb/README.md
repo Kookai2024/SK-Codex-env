@@ -22,14 +22,14 @@ cd server
    - `users` (auth, role 필드: admin/member/guest)
    - `projects`
    - `todos` (lock_deadline 필드를 활용한 편집 잠금 규칙 포함)
-   - `attendance`
+- `attendance` (본인 레코드는 Punch Out 시 수정 가능)
    - `reports`
 
 > **Edit-lock 규칙**: `todos.updateRule`은 관리자가 아니면 `lock_deadline` 또는 `created` 기준으로 다음 날 09:00(Asia/Seoul) 이후 수정할 수 없도록 제한합니다.
 
 ## 3. 권한 요약 (RBAC)
 - **admin**: 모든 컬렉션에 대한 CRUD 권한 보유
-- **member**: 본인이 담당(`assignee`)인 todo 생성/조회/제한적 수정, 출근 기록 작성
+- **member**: 본인이 담당(`assignee`)인 todo 생성/조회/제한적 수정, 출근 기록 작성 및 본인 출퇴근(Punch Out) 기록 수정
 - **guest**: 읽기 전용 (로그인 필요)
 
 ## 4. 시드 데이터 & 더미 CSV
@@ -45,6 +45,8 @@ npm run seed
 ## 5. 문제 해결
 - **403 오류 발생 시**: 역할 또는 edit-lock 규칙을 확인하고, 필요한 경우 관리자 계정으로 로그인해 수정합니다.
 - **스키마 재설치**: 기존 컬렉션을 백업 후 삭제하고 다시 `collections.json`을 임포트하세요.
+
+> **2025-09-25 업데이트**: `attendance.updateRule`이 `@request.auth.role = "admin" || @request.auth.id = user`로 수정되어, member 역할 사용자가 자신의 레코드에서 Punch Out 시 `check_out_at`을 업데이트할 수 있습니다. 변경된 `collections.json`을 다시 임포트하면 규칙이 즉시 반영됩니다.
 
 ## 6. 추가 자료
 - `../scripts/cron-weekly-report.ts`: 주간 보고서 자동화를 위한 Node 스크립트 (Mon–Fri 집계)
