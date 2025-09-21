@@ -4,6 +4,7 @@
  */
 
 import Link from 'next/link';
+import { threadClassNames } from '../lib/ui/thread/threadStyles';
 
 interface OnboardingStep {
   /** 단계 표시용 번호 */
@@ -81,27 +82,27 @@ const QUICK_LINKS: QuickLink[] = [
 export default function HomePage() {
   // 초보자에게 전체 흐름을 요약해 보여준다.
   return (
-    <section className="thread-section">
+    <section className={threadClassNames.section}>
       {/* 온보딩 소개 헤더를 렌더링한다. */}
-      <header className="thread-section__header">
-        <span className="thread-eyebrow">Onboarding Feed</span>
-        <h1 className="thread-title">팀 Todo 시스템 시작하기</h1>
-        <p className="thread-subtitle">왼쪽 메뉴를 따라 로그인 → 근태 → 내 업무 → 대시보드 순으로 기능을 체험해 보세요.</p>
+      <header className={threadClassNames.sectionHeader}>
+        <span className={threadClassNames.eyebrow}>Onboarding Feed</span>
+        <h1 className={threadClassNames.title}>팀 Todo 시스템 시작하기</h1>
+        <p className={threadClassNames.subtitle}>왼쪽 메뉴를 따라 로그인 → 근태 → 내 업무 → 대시보드 순으로 기능을 체험해 보세요.</p>
       </header>
 
-      <div className="thread-grid thread-grid--two">
+      <div className={threadClassNames.grid({ layout: 'two' })}>
         {/* 단계별 안내를 스레드 타임라인으로 표현한다. */}
-        <article className="thread-panel thread-panel--accent">
+        <article className={threadClassNames.panel({ variant: 'accent' })}>
           <h2>온보딩 체크리스트</h2>
-          <p className="thread-panel__description">각 단계를 순서대로 확인하면 서비스 흐름이 빠르게 이해됩니다.</p>
-          <ul className="thread-timeline">
+          <p className={threadClassNames.panelDescription}>각 단계를 순서대로 확인하면 서비스 흐름이 빠르게 이해됩니다.</p>
+          <ul className={threadClassNames.timeline}>
             {ONBOARDING_STEPS.map((step) => (
-              <li key={step.step} className="thread-timeline__item">
-                <span className="thread-timeline__badge">{step.step}</span>
-                <div className="thread-timeline__body">
-                  <p className="thread-timeline__title">{step.title}</p>
+              <li key={step.step} className={threadClassNames.timelineItem}>
+                <span className={threadClassNames.timelineBadge}>{step.step}</span>
+                <div className={threadClassNames.timelineBody}>
+                  <p className={threadClassNames.timelineTitle}>{step.title}</p>
                   <p>{step.description}</p>
-                  <p className="thread-timeline__hint">{step.hint}</p>
+                  <p className={threadClassNames.timelineHint}>{step.hint}</p>
                 </div>
               </li>
             ))}
@@ -109,19 +110,19 @@ export default function HomePage() {
         </article>
 
         {/* 빠른 액션 패널을 렌더링한다. */}
-        <aside className="thread-panel thread-panel--muted">
+        <aside className={threadClassNames.panel({ variant: 'muted' })}>
           <h2>바로가기</h2>
-          <p className="thread-panel__description">주요 페이지를 즉시 열어 스레드형 UX를 체험하세요.</p>
-          <div className="thread-card-divider" />
+          <p className={threadClassNames.panelDescription}>주요 페이지를 즉시 열어 스레드형 UX를 체험하세요.</p>
+          <div className={threadClassNames.cardDivider} />
           {QUICK_LINKS.map((link, index) => {
             const isLastLink = index === QUICK_LINKS.length - 1; // 마지막 항목 여부를 계산한다.
             return (
               <div key={link.href}>
-                <Link href={link.href} className="thread-button thread-button--link">
+                <Link href={link.href} className={threadClassNames.button({ variant: 'link' })}>
                   <span>{link.label}</span>
                 </Link>
-                <p className="thread-muted">{link.description}</p>
-                {!isLastLink ? <div className="thread-card-divider" /> : null}
+                <p className={threadClassNames.muted}>{link.description}</p>
+                {!isLastLink ? <div className={threadClassNames.cardDivider} /> : null}
               </div>
             );
           })}

@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { composeThreadClasses, threadClassNames } from '../../lib/ui/thread/threadStyles';
 import { useAuth } from '../providers';
 
 interface TodoRecord {
@@ -145,58 +146,61 @@ export default function PersonalKanbanPage() {
 
   if (!isAuthenticated) {
     return (
-      <section className="thread-section">
-        <article className="thread-panel thread-panel--muted">
-          <p className="thread-muted">로그인 후 개인 칸반을 확인할 수 있습니다.</p>
+      <section className={threadClassNames.section}>
+        <article className={threadClassNames.panel({ variant: 'muted' })}>
+          <p className={threadClassNames.muted}>로그인 후 개인 칸반을 확인할 수 있습니다.</p>
         </article>
       </section>
     );
   }
 
   return (
-    <section className="thread-section">
-      <header className="thread-section__header">
-        <span className="thread-eyebrow">My Tasks Thread</span>
-        <h1 className="thread-title">내 업무 칸반</h1>
-        <p className="thread-subtitle">다음 날 오전 9시 이후에는 관리자만 수정 가능한 편집 잠금 정책이 적용됩니다.</p>
+    <section className={threadClassNames.section}>
+      <header className={threadClassNames.sectionHeader}>
+        <span className={threadClassNames.eyebrow}>My Tasks Thread</span>
+        <h1 className={threadClassNames.title}>내 업무 칸반</h1>
+        <p className={threadClassNames.subtitle}>다음 날 오전 9시 이후에는 관리자만 수정 가능한 편집 잠금 정책이 적용됩니다.</p>
       </header>
 
       {isLoading ? (
-        <article className="thread-panel thread-panel--muted">
-          <p className="thread-muted">작업을 불러오는 중입니다...</p>
+        <article className={threadClassNames.panel({ variant: 'muted' })}>
+          <p className={threadClassNames.muted}>작업을 불러오는 중입니다...</p>
         </article>
       ) : null}
 
-      <div className="thread-grid thread-grid--kanban">
+      <div className={threadClassNames.grid({ layout: 'kanban' })}>
         {KANBAN_COLUMNS.map((columnKey) => {
           const todosInColumn = columns[columnKey];
           return (
-            <article key={columnKey} className="thread-panel thread-panel--muted thread-kanban-column">
-              <div className="thread-meta">
+            <article
+              key={columnKey}
+              className={composeThreadClasses(
+                threadClassNames.panel({ variant: 'muted' }),
+                threadClassNames.kanbanColumn
+              )}
+            >
+              <div className={threadClassNames.meta}>
                 <h2>{COLUMN_LABELS[columnKey]}</h2>
-                <span className="thread-pill thread-pill--accent">{todosInColumn.length}</span>
+                <span className={threadClassNames.pill({ tone: 'accent' })}>{todosInColumn.length}</span>
               </div>
 
-              <div className="thread-card-divider" />
+              <div className={threadClassNames.cardDivider} />
 
               {todosInColumn.map((todoItem) => {
                 const locked = isLockedForUser(todoItem, role);
                 return (
-                  <div
-                    key={todoItem.id}
-                    className={`thread-kanban-card${locked ? ' thread-kanban-card--locked' : ''}`}
-                  >
-                    <div className="thread-meta">
+                  <div key={todoItem.id} className={threadClassNames.kanbanCard({ isLocked: locked })}>
+                    <div className={threadClassNames.meta}>
                       <h3>{todoItem.title}</h3>
-                      {locked ? <span className="thread-kanban-card__badge">LOCK</span> : null}
+                      {locked ? <span className={threadClassNames.kanbanCardBadge}>LOCK</span> : null}
                     </div>
-                    <div className="thread-kanban-card__meta">
+                    <div className={threadClassNames.kanbanCardMeta}>
                       <span>수정 · {todoItem.updated ? buildSeoulDateKey(new Date(todoItem.updated)) : '-'}</span>
                       <span>생성 · {todoItem.created ? buildSeoulDateKey(new Date(todoItem.created)) : '-'}</span>
                     </div>
-                    <div className="thread-kanban-card__actions">
+                    <div className={threadClassNames.kanbanCardActions}>
                       <button
-                        className="thread-button thread-button--ghost"
+                        className={threadClassNames.button({ variant: 'ghost' })}
                         onClick={() => handleMove(todoItem, -1)}
                         disabled={
                           locked || role === 'guest' || KANBAN_COLUMNS.indexOf(todoItem.status) === 0
@@ -205,7 +209,7 @@ export default function PersonalKanbanPage() {
                         이전 단계
                       </button>
                       <button
-                        className="thread-button thread-button--ghost"
+                        className={threadClassNames.button({ variant: 'ghost' })}
                         onClick={() => handleMove(todoItem, 1)}
                         disabled={
                           locked ||
@@ -220,14 +224,14 @@ export default function PersonalKanbanPage() {
                 );
               })}
 
-              {todosInColumn.length === 0 ? <p className="thread-empty">현재 항목이 없습니다.</p> : null}
+              {todosInColumn.length === 0 ? <p className={threadClassNames.empty}>현재 항목이 없습니다.</p> : null}
             </article>
           );
         })}
       </div>
 
-      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
-      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
+      {info ? <div className={threadClassNames.alert({ tone: 'success' })}>{info}</div> : null}
+      {error ? <div className={threadClassNames.alert({ tone: 'error' })}>{error}</div> : null}
     </section>
   );
 }

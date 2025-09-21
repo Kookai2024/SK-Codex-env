@@ -1,97 +1,14 @@
 /*
- * @file web/app/globals.css
- * @description 전역 타이포그래피와 최신 스레드형 UI 감성을 위한 유틸리티 클래스를 정의한다.
+ * @file web/lib/ui/thread/thread.module.css
+ * @description 스레드형 UI 컴포넌트에서 사용하는 레이아웃, 카드, 버튼 등의 스타일을 모듈화한다.
  */
 
-:root {
-  color-scheme: light;
-  font-family: 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --app-gradient-start: #0f172a;
-  --app-gradient-end: #1e1b4b;
-  --surface-primary: rgba(15, 23, 42, 0.82);
-  --surface-secondary: rgba(30, 41, 59, 0.82);
-  --surface-border: rgba(148, 163, 184, 0.32);
-  --surface-highlight: linear-gradient(135deg, rgba(59, 130, 246, 0.28), rgba(99, 102, 241, 0.24));
-  --text-primary: #f8fafc;
-  --text-secondary: rgba(226, 232, 240, 0.92);
-  --text-muted: rgba(148, 163, 184, 0.9);
-  --accent: #60a5fa;
-  --accent-strong: #3b82f6;
-  --danger: #f87171;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --content-max-width: 1120px;
-  --radius-lg: 24px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
-  --shadow-soft: 0 24px 48px rgba(15, 23, 42, 0.35);
-  --shadow-small: 0 12px 30px rgba(15, 23, 42, 0.25);
-  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --transition: 180ms ease-in-out;
-  --spacing-xl: 3rem;
-  --spacing-lg: 2rem;
-  --spacing-md: 1.25rem;
-  --spacing-sm: 0.75rem;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  background: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.4), transparent 46%),
-    radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.38), transparent 52%),
-    linear-gradient(160deg, var(--app-gradient-start), var(--app-gradient-end));
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: none;
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-}
-
-p,
-ul,
-ol {
-  margin: 0;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-weight: 700;
-  color: inherit;
-}
-
-.app-background {
+.appBackground {
   min-height: 100vh;
   position: relative;
 }
 
-.app-shell {
+.appShell {
   position: relative;
   min-height: 100vh;
   display: flex;
@@ -100,7 +17,7 @@ h6 {
   padding: var(--spacing-xl) 1.5rem 4rem;
 }
 
-.app-shell::before {
+.appShell::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -111,7 +28,7 @@ h6 {
   z-index: 0;
 }
 
-.app-container {
+.appContainer {
   width: min(var(--content-max-width), 100%);
   display: flex;
   flex-direction: column;
@@ -120,7 +37,7 @@ h6 {
   z-index: 1;
 }
 
-.thread-navbar {
+.navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -133,7 +50,7 @@ h6 {
   gap: 1rem;
 }
 
-.thread-navbar__brand {
+.navbarBrand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -141,7 +58,7 @@ h6 {
   font-weight: 700;
 }
 
-.thread-navbar__brand-mark {
+.navbarBrandMark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -154,14 +71,14 @@ h6 {
   font-weight: 800;
 }
 
-.thread-nav-links {
+.navLinks {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.thread-nav-link {
+.navLink {
   padding: 0.55rem 0.95rem;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -174,20 +91,20 @@ h6 {
   gap: 0.4rem;
 }
 
-.thread-nav-link:hover {
+.navLink:hover {
   background: rgba(99, 102, 241, 0.28);
   color: #fff;
   transform: translateY(-1px);
 }
 
-.thread-nav-link--primary {
+.navLinkPrimary {
   background: rgba(59, 130, 246, 0.32);
   border-color: rgba(59, 130, 246, 0.45);
   color: #fff;
   box-shadow: 0 18px 34px rgba(37, 99, 235, 0.3);
 }
 
-.thread-navbar__meta {
+.navbarMeta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -195,25 +112,25 @@ h6 {
   color: var(--text-muted);
 }
 
-.thread-main {
+.main {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
 }
 
-.thread-section {
+.section {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.thread-section__header {
+.sectionHeader {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
 }
 
-.thread-eyebrow {
+.eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -224,19 +141,19 @@ h6 {
   font-weight: 700;
 }
 
-.thread-title {
+.title {
   font-size: clamp(2rem, 4vw, 2.7rem);
   line-height: 1.2;
 }
 
-.thread-subtitle {
+.subtitle {
   font-size: 0.95rem;
   color: var(--text-secondary);
   max-width: 640px;
   line-height: 1.65;
 }
 
-.thread-panel {
+.panel {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -250,7 +167,7 @@ h6 {
   overflow: hidden;
 }
 
-.thread-panel::before {
+.panel::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -260,52 +177,52 @@ h6 {
   pointer-events: none;
 }
 
-.thread-panel:hover::before {
+.panel:hover::before {
   opacity: 0.75;
 }
 
-.thread-panel--accent {
+.panelAccent {
   background: linear-gradient(150deg, rgba(59, 130, 246, 0.28), rgba(15, 23, 42, 0.88));
   border-color: rgba(96, 165, 250, 0.45);
 }
 
-.thread-panel--muted {
+.panelMuted {
   background: linear-gradient(140deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
 }
 
-.thread-panel--stat {
+.panelStat {
   gap: 0.4rem;
 }
 
-.thread-panel__metric {
+.panelMetric {
   font-size: 2.7rem;
   font-weight: 700;
 }
 
-.thread-panel__description {
+.panelDescription {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
 
-.thread-grid {
+.grid {
   display: grid;
   gap: var(--spacing-md);
 }
 
-.thread-grid--two {
+.gridTwo {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-.thread-grid--four {
+.gridFour {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.thread-grid--kanban {
+.gridKanban {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   align-items: start;
 }
 
-.thread-pill {
+.pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -318,13 +235,13 @@ h6 {
   font-weight: 600;
 }
 
-.thread-pill--accent {
+.pillAccent {
   background: rgba(96, 165, 250, 0.25);
   border-color: rgba(96, 165, 250, 0.4);
   color: #fff;
 }
 
-.thread-button {
+.button {
   appearance: none;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -337,64 +254,65 @@ h6 {
   gap: 0.45rem;
   background: rgba(148, 163, 184, 0.15);
   color: var(--text-secondary);
-  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition), border var(--transition);
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition),
+    border var(--transition);
 }
 
-.thread-button:not(:disabled):hover {
+.button:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 32px rgba(15, 23, 42, 0.32);
 }
 
-.thread-button:disabled {
+.button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.thread-button--primary {
+.buttonPrimary {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(59, 130, 246, 0.88));
   border-color: rgba(96, 165, 250, 0.55);
   color: #fff;
 }
 
-.thread-button--danger {
+.buttonDanger {
   background: linear-gradient(135deg, rgba(248, 113, 113, 0.92), rgba(239, 68, 68, 0.88));
   border-color: rgba(248, 113, 113, 0.55);
   color: #fff;
 }
 
-.thread-button--ghost {
+.buttonGhost {
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.28);
 }
 
-.thread-button--link {
+.buttonLink {
   background: transparent;
   border-color: transparent;
   padding-inline: 0;
   justify-content: flex-start;
 }
 
-.thread-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.thread-field {
+.field {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
 }
 
-.thread-label {
+.label {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.thread-input {
+.input {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
@@ -404,13 +322,13 @@ h6 {
   transition: border var(--transition), box-shadow var(--transition);
 }
 
-.thread-input:focus {
+.input:focus {
   outline: none;
   border-color: rgba(96, 165, 250, 0.55);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-.thread-alert {
+.alert {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -420,25 +338,25 @@ h6 {
   border: 1px solid transparent;
 }
 
-.thread-alert--success {
+.alertSuccess {
   background: rgba(52, 211, 153, 0.18);
   border-color: rgba(52, 211, 153, 0.45);
   color: #bbf7d0;
 }
 
-.thread-alert--error {
+.alertError {
   background: rgba(248, 113, 113, 0.2);
   border-color: rgba(248, 113, 113, 0.45);
   color: #fecaca;
 }
 
-.thread-alert--info {
+.alertInfo {
   background: rgba(96, 165, 250, 0.18);
   border-color: rgba(96, 165, 250, 0.4);
   color: #dbeafe;
 }
 
-.thread-meta {
+.meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1.2rem;
@@ -446,7 +364,7 @@ h6 {
   color: var(--text-muted);
 }
 
-.thread-timeline {
+.timeline {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -456,7 +374,7 @@ h6 {
   position: relative;
 }
 
-.thread-timeline::before {
+.timeline::before {
   content: '';
   position: absolute;
   top: 6px;
@@ -466,13 +384,13 @@ h6 {
   background: linear-gradient(180deg, rgba(96, 165, 250, 0.55), rgba(96, 165, 250, 0));
 }
 
-.thread-timeline__item {
+.timelineItem {
   display: flex;
   gap: 1.25rem;
   position: relative;
 }
 
-.thread-timeline__badge {
+.timelineBadge {
   width: 36px;
   height: 36px;
   border-radius: 999px;
@@ -487,29 +405,29 @@ h6 {
   flex-shrink: 0;
 }
 
-.thread-timeline__body {
+.timelineBody {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
   color: var(--text-secondary);
 }
 
-.thread-timeline__title {
+.timelineTitle {
   font-size: 1.05rem;
 }
 
-.thread-timeline__hint {
+.timelineHint {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
 
-.thread-kanban-column {
+.kanbanColumn {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-.thread-kanban-card {
+.kanbanCard {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -520,11 +438,11 @@ h6 {
   box-shadow: var(--shadow-inner);
 }
 
-.thread-kanban-card--locked {
+.kanbanCardLocked {
   border-color: rgba(251, 191, 36, 0.55);
 }
 
-.thread-kanban-card__badge {
+.kanbanCardBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -537,7 +455,7 @@ h6 {
   font-weight: 600;
 }
 
-.thread-kanban-card__meta {
+.kanbanCardMeta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
@@ -545,12 +463,12 @@ h6 {
   color: var(--text-muted);
 }
 
-.thread-kanban-card__actions {
+.kanbanCardActions {
   display: flex;
   gap: 0.75rem;
 }
 
-.thread-empty {
+.empty {
   font-size: 0.78rem;
   color: var(--text-muted);
   background: rgba(148, 163, 184, 0.12);
@@ -559,7 +477,7 @@ h6 {
   text-align: center;
 }
 
-.thread-modal {
+.modal {
   position: fixed;
   inset: 0;
   display: flex;
@@ -571,7 +489,7 @@ h6 {
   z-index: 10;
 }
 
-.thread-modal__card {
+.modalCard {
   width: min(420px, 100%);
   display: flex;
   flex-direction: column;
@@ -583,56 +501,45 @@ h6 {
   box-shadow: var(--shadow-soft);
 }
 
-.thread-modal__actions {
+.modalActions {
   display: flex;
   gap: 0.75rem;
 }
 
-.thread-card-divider {
+.cardDivider {
   height: 1px;
   width: 100%;
   background: rgba(148, 163, 184, 0.18);
   margin: 0.5rem 0;
 }
 
-.thread-muted {
+.muted {
   color: var(--text-muted);
   font-size: 0.8rem;
 }
 
 @media (max-width: 960px) {
-  .app-shell {
+  .appShell {
     padding: var(--spacing-lg) 1rem 3rem;
   }
 
-  .thread-navbar {
+  .navbar {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .thread-nav-links {
+  .navLinks {
     width: 100%;
     justify-content: flex-start;
   }
 }
 
 @media (max-width: 600px) {
-  .thread-nav-link {
+  .navLink {
     padding: 0.5rem 0.75rem;
   }
 
-  .thread-panel {
+  .panel {
     padding: 1.4rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
