@@ -1,73 +1,71 @@
 # Team Todo List System (SK-Codex)
 
 ## 📌 Overview
-- 팀 todo/근태/보고서 관리를 위한 LAN-first 시스템입니다.
-- PocketBase 기반 백엔드 + (추후) Next.js 기반 프런트엔드 구조를 목표로 합니다.
-- `team-todo-kickoff_v2_250920.md` 문서를 요구사항 원본으로 유지하며, 개발 단계별 진행 상황은 진행 현황 문서에서 확인합니다.
+- PocketBase + Next.js 기반의 팀 업무/근태/보고서 통합 시스템입니다.
+- 기능별 디렉터리(`auth/`, `attendance/`, `todos/`, `projects/`, `dashboard/`, `reports/`) 구조를 유지해 초보자도 빠르게 진입할 수 있습니다.
+- 최신 스키마는 `packages/server/pb/collections.json`에 포함되어 있으며, 주간 보고서 자동화 스크립트는 `packages/server/scripts/cron-weekly-report.ts`에 위치합니다.
 
-## 🚦 Current Status (2025-09-25)
-- DB 스키마와 시드 스크립트 초안이 존재하지만 PocketBase 연동 및 자동 검증은 아직 미완입니다.
-- 주간 보고서 스크립트 초안과 `node --test` 기반 테스트가 존재합니다. 보고서 파일 생성 경로 정리 및 통합 자동화가 필요합니다.
-- 프런트엔드(출퇴근 UI, 칸반, 대시보드)는 아직 착수하지 않았습니다.
-- 상세 현황과 다음 단계는 [`docs/progress/2025-09-25_mid-check.md`](docs/progress/2025-09-25_mid-check.md)에서 중간점검 리포트로 제공합니다.
-- 휴무 일정 컬렉션(`leave_schedules`)과 월간 캘린더 API 초안이 추가되어 근태 캘린더 연동 기반이 마련되었습니다.
-- 대시보드 권한별 개요 REST API와 단위 테스트를 추가해 관리자/구성원 권한을 서버에서 강제합니다.
-
-## 🗂️ Repository Structure
-```
-.
-├── auth/                     # 인증 모듈 기본 뼈대 (api/ui/types/utils/tests)
-├── todos/                    # Todo/칸반 모듈 기본 뼈대
-├── projects/                 # 프로젝트 관리 모듈 기본 뼈대
-├── dashboard/                # 역할 기반 대시보드 뼈대
-├── reports/                  # 보고서 생성/연동 모듈 뼈대
-├── packages/
-│   └── server/
-│       ├── pb/               # PocketBase 컬렉션 정의 및 리소스
-│       └── scripts/          # 시드/보고서 Node 스크립트 + 테스트
-├── docs/
-│   └── progress/             # 중간점검 및 회고 문서
-├── team-todo-kickoff_v2_250920.md  # 공식 요구사항 스펙
-├── codex-kickoff.md          # Codex 작업 가이드 요약본
-└── HOW_TO_EDIT.md            # 초보자용 수정 가이드 (이 문서 참조)
-```
-
-## ⚙️ Getting Started
-1. **루트 의존성 설치**
+## 🚀 Quick Start
+1. **루트 의존성 설치 및 테스트 확인**
    ```bash
    npm install
+   npm test
    ```
-   - 출퇴근 REST API 테스트에 필요한 Express/Luxon/zod 패키지를 설치합니다.
-2. **PocketBase 리소스 확인**
-   - `packages/server/pb/collections.json`을 PocketBase Admin UI로 임포트합니다.
-   - 필요 시 `pocketbase.zip`을 이용해 로컬 PocketBase 바이너리를 구성합니다.
-3. **스크립트 의존성 설치**
+   - Jest + ts-jest 기반으로 `attendance/`, `todos/`, `dashboard/` smoke 테스트가 실행됩니다.
+2. **PocketBase 스키마 임포트 & 시드 데이터 생성**
    ```bash
    cd packages/server/scripts
    npm install
-   ```
-4. **시드 데이터 생성**
-   ```bash
    npm run seed
    ```
-   - 실행 전 PocketBase 서버가 `http://127.0.0.1:8090`에서 동작 중인지 확인하세요.
-5. **테스트 실행**
+   - `packages/server/pb/README.md`에 임포트 절차와 edit-lock 규칙이 정리되어 있습니다.
+3. **Next.js 프런트엔드 실행**
    ```bash
-   npm test
+   cd web
+   npm install
+   npm run dev
    ```
-   - 루트 명령은 출퇴근 서비스 테스트와 주간 보고서 스크립트 테스트를 모두 실행합니다.
-   - 보고서 스크립트만 실행하려면 `npm --prefix packages/server/scripts test`를 사용하세요.
-6. **문서 참고**
-   - 요구사항: `team-todo-kickoff_v2_250920.md`
-   - 진행 상황: `docs/progress/2025-09-25_mid-check.md`
-   - 수정 가이드: `HOW_TO_EDIT.md`
+   - 주요 페이지: `/login`, `/attendance`, `/me`, `/dashboard`
+4. **주간 보고서 생성**
+   ```bash
+   cd /workspace/SK-Codex-team_todo
+   npm run report:weekly
+   ```
+   - 결과물은 `reports/YYYY-WW/` 디렉터리에 Markdown/CSV/XLSX 파일로 저장됩니다.
 
-## 🛠️ Next Steps
-- [ ] PocketBase 시드 및 테스트 자동화 파이프라인 확정.
-- [x] 출퇴근 UI/로직 설계 (Step 2 기본 API/컴포넌트 초안 추가).
-- [x] 캘린더 근태 유형 연동을 위한 데이터 모델 검증.
-- [x] Todo 칸반 편집 잠금 백엔드/API 초안 구현 (Step 4 진행 시작).
-- [x] 대시보드 RBAC 개요 API 초안 구현 (Step 5 진행 착수).
-- [ ] 칸반 UI 및 공통 레이아웃 설계 초안 작성.
+## 🧩 Feature Highlights
+- **RBAC & Edit-Lock**: PocketBase 규칙으로 `admin/member/guest` 권한과 다음날 09:00(Asia/Seoul) 이후 잠금 정책을 적용합니다.
+- **근태 UI**: 출근/퇴근 버튼을 제공하며 퇴근 시 확인 모달을 띄워 실수 방지.
+- **개인 칸반**: 상태 컬럼(prework/design/hold/po_placed/incoming)과 잠금 뱃지를 통해 편집 제한을 시각화.
+- **대시보드**: 역할별 타일과 주간 보고서 공유 토글 제공.
+- **주간 보고서 자동화**: Mon–Fri 데이터를 집계해 `<금주일정>`/`<차주일정>` 요약을 생성하고 Obsidian Vault 복사 옵션을 지원합니다.
 
-> 개발 시 모든 신규 파일/함수에 주석을 추가하고, 주요 로직마다 인라인 주석을 작성하는 규칙을 유지하세요.
+## 🧪 Testing & Quality
+- `npm test`: 루트 Jest 테스트 실행
+- `npm run test:watch`: 변경 사항 실시간 감지
+- `npm run test:coverage`: 커버리지 보고서 출력
+- `npm --prefix packages/server/scripts test`: 서버 스크립트 전용 테스트(기존 Node 테스트)
+
+## 📂 Repository Structure (요약)
+```
+.
+├── attendance/               # 근태 API/UI/유틸/테스트
+├── todos/                    # 칸반 관련 로직
+├── dashboard/                # 역할 기반 대시보드
+├── projects/                 # 프로젝트 관련 타입/유틸
+├── reports/                  # 자동 보고서 산출물 저장소 (gitignore 처리)
+├── packages/server/pb/       # PocketBase 스키마 및 설명
+├── packages/server/scripts/  # 시드/주간 보고서 스크립트
+├── server/                   # PocketBase 실행 파일
+└── web/                      # Next.js 14 기반 프런트엔드 (App Router)
+```
+
+## 📚 문서 & 참고 자료
+- `HOW_TO_EDIT.md`: 초보자용 수정 가이드
+- `team-todo-kickoff_v2_250920.md`: 전체 요구사항 명세 (변경 사항은 하단 히스토리 참조)
+- `RUN.md`: PocketBase/Next.js 실행 순서 요약
+
+## ✅ Next Steps
+- [ ] PocketBase hook(automation)으로 lock_deadline 자동 계산 추가
+- [ ] Next.js UI 테스트(Jest + RTL) 구성
+- [ ] GitHub Actions CI 강화 (현재 기본 npm test Workflow 제공)

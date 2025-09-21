@@ -1,7 +1,16 @@
 # Team Todo List System — Kickoff & Working Guide (v2)
 
-> 초보자도 그대로 따라 할 수 있도록 **세부 주석**과 **체크리스트**를 포함합니다.  
+> 초보자도 그대로 따라 할 수 있도록 **세부 주석**과 **체크리스트**를 포함합니다.
 > 이 문서는 **이 프로젝트(team-todo)** 의 “요구사항 원본(spec)”이며, Codex/Cursor가 참조할 기준입니다.
+
+
+## ✨ 2024-05-31 업데이트 요약
+
+- PocketBase 스키마를 재정비하여 `users`, `projects`, `todos`, `attendance`, `reports` 컬렉션을 정식 지원합니다.
+- `todos.updateRule`에 편집 잠금 규칙(다음날 09:00 KST 이후 관리자만 수정)을 반영했습니다.
+- Next.js 14 기반 프런트엔드에 `/login`, `/attendance`, `/me`, `/dashboard` 페이지와 역할별 UI를 추가했습니다.
+- `cron-weekly-report.ts` 스크립트가 Mon–Fri 데이터를 집계해 Markdown/CSV/XLSX를 생성하고 Obsidian 복사를 지원합니다.
+- README/HOW_TO_EDIT/RUN.md 문서를 갱신해 설치 및 운영 절차를 명확히 했습니다.
 
 
 ## 0. 목표 (What & Why)

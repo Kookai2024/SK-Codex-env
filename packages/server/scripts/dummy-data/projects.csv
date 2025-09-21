@@ -1,0 +1,6 @@
+name,code,status,description
+도입 준비,PRJ-ONBOARD,planning,신규 시스템 도입 준비 단계
+근태 개선,PRJ-ATTEND,in_progress,PocketBase 근태 모듈 고도화
+칸반 클린업,PRJ-KANBAN,delayed,기존 칸반 컬럼 정리 및 가이드 배포
+보고서 자동화,PRJ-REPORT,planning,주간/월간 보고서 자동화
+보안 강화,PRJ-SECURE,in_progress,권한 검증 및 로그 강화

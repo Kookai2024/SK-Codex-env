@@ -6,6 +6,7 @@
   "scripts": {
     "seed": "node seed.js",
     "weekly-report": "node weekly-report.js",
+    "cron-weekly-report": "ts-node cron-weekly-report.ts",
     "test": "node --test tests",
     "install-deps": "npm install"
   },
@@ -21,7 +22,10 @@
     "pocketbase": "^0.21.0",
     "xlsx": "^0.18.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
   "engines": {
     "node": ">=16.0.0"
   }

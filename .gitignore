@@ -3,3 +3,14 @@ node_modules/
 
 # TypeScript build output
 *.tsbuildinfo
+
+# Environment and local configuration files
+.env
+.env.local
+web/.env
+web/.env.local
+web/.next
+
+# Generated weekly report artifacts
+reports/**/*.csv
+reports/**/*.xlsx
