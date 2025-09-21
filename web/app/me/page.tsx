@@ -2,7 +2,7 @@
 // Where to edit: 칸반 컬럼 구성이나 이동 로직을 수정하려면 KANBAN_COLUMNS와 handleMove 함수를 변경하세요.
 /**
  * @file web/app/me/page.tsx
- * @description 개인 업무 칸반을 표시하고 편집 잠금 상태를 시각화하는 페이지입니다.
+ * @description 개인 업무 칸반을 최신 스레드형 카드 스타일로 표시하고 편집 잠금 상태를 시각화하는 페이지이다.
  */
 
 import React from 'react';
@@ -144,72 +144,90 @@ export default function PersonalKanbanPage() {
   };
 
   if (!isAuthenticated) {
-    return <p className="text-sm">로그인 후 개인 칸반을 확인할 수 있습니다.</p>;
+    return (
+      <section className="thread-section">
+        <article className="thread-panel thread-panel--muted">
+          <p className="thread-muted">로그인 후 개인 칸반을 확인할 수 있습니다.</p>
+        </article>
+      </section>
+    );
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold">내 업무 칸반</h1>
-        <p className="text-sm text-slate-600">다음 날 오전 9시 이후에는 관리자만 수정 가능합니다.</p>
+    <section className="thread-section">
+      <header className="thread-section__header">
+        <span className="thread-eyebrow">My Tasks Thread</span>
+        <h1 className="thread-title">내 업무 칸반</h1>
+        <p className="thread-subtitle">다음 날 오전 9시 이후에는 관리자만 수정 가능한 편집 잠금 정책이 적용됩니다.</p>
       </header>
 
-      {isLoading ? <p className="text-sm">작업을 불러오는 중입니다...</p> : null}
+      {isLoading ? (
+        <article className="thread-panel thread-panel--muted">
+          <p className="thread-muted">작업을 불러오는 중입니다...</p>
+        </article>
+      ) : null}
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="thread-grid thread-grid--kanban">
         {KANBAN_COLUMNS.map((columnKey) => {
           const todosInColumn = columns[columnKey];
           return (
-            <div key={columnKey} className="table-like space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold">{COLUMN_LABELS[columnKey]}</h2>
-                <span className="rounded-full bg-slate-200 px-3 py-0.5 text-xs">{todosInColumn.length}</span>
+            <article key={columnKey} className="thread-panel thread-panel--muted thread-kanban-column">
+              <div className="thread-meta">
+                <h2>{COLUMN_LABELS[columnKey]}</h2>
+                <span className="thread-pill thread-pill--accent">{todosInColumn.length}</span>
               </div>
 
-              <div className="space-y-3">
-                {todosInColumn.map((todoItem) => {
-                  const locked = isLockedForUser(todoItem, role);
-                  return (
-                    <article key={todoItem.id} className="space-y-3 rounded border bg-white p-3 text-sm shadow">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">{todoItem.title}</h3>
-                        {locked ? <span className="rounded bg-amber-100 px-2 py-1 text-xs text-amber-700">LOCK</span> : null}
-                      </div>
-                      <div className="flex gap-2 text-xs text-slate-500">
-                        <span>수정: {todoItem.updated ? buildSeoulDateKey(new Date(todoItem.updated)) : '-'}</span>
-                        <span>생성: {todoItem.created ? buildSeoulDateKey(new Date(todoItem.created)) : '-'}</span>
-                      </div>
-                      <div className="flex gap-2 text-xs">
-                        <button
-                          className="flex-1 rounded border px-2 py-1 disabled:opacity-40"
-                          onClick={() => handleMove(todoItem, -1)}
-                          disabled={locked || role === 'guest' || KANBAN_COLUMNS.indexOf(todoItem.status) === 0}
-                        >
-                          이전 단계
-                        </button>
-                        <button
-                          className="flex-1 rounded border px-2 py-1 disabled:opacity-40"
-                          onClick={() => handleMove(todoItem, 1)}
-                          disabled={locked || role === 'guest' || KANBAN_COLUMNS.indexOf(todoItem.status) === KANBAN_COLUMNS.length - 1}
-                        >
-                          다음 단계
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
+              <div className="thread-card-divider" />
 
-                {todosInColumn.length === 0 ? (
-                  <p className="text-xs text-slate-500">현재 항목이 없습니다.</p>
-                ) : null}
-              </div>
-            </div>
+              {todosInColumn.map((todoItem) => {
+                const locked = isLockedForUser(todoItem, role);
+                return (
+                  <div
+                    key={todoItem.id}
+                    className={`thread-kanban-card${locked ? ' thread-kanban-card--locked' : ''}`}
+                  >
+                    <div className="thread-meta">
+                      <h3>{todoItem.title}</h3>
+                      {locked ? <span className="thread-kanban-card__badge">LOCK</span> : null}
+                    </div>
+                    <div className="thread-kanban-card__meta">
+                      <span>수정 · {todoItem.updated ? buildSeoulDateKey(new Date(todoItem.updated)) : '-'}</span>
+                      <span>생성 · {todoItem.created ? buildSeoulDateKey(new Date(todoItem.created)) : '-'}</span>
+                    </div>
+                    <div className="thread-kanban-card__actions">
+                      <button
+                        className="thread-button thread-button--ghost"
+                        onClick={() => handleMove(todoItem, -1)}
+                        disabled={
+                          locked || role === 'guest' || KANBAN_COLUMNS.indexOf(todoItem.status) === 0
+                        }
+                      >
+                        이전 단계
+                      </button>
+                      <button
+                        className="thread-button thread-button--ghost"
+                        onClick={() => handleMove(todoItem, 1)}
+                        disabled={
+                          locked ||
+                          role === 'guest' ||
+                          KANBAN_COLUMNS.indexOf(todoItem.status) === KANBAN_COLUMNS.length - 1
+                        }
+                      >
+                        다음 단계
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {todosInColumn.length === 0 ? <p className="thread-empty">현재 항목이 없습니다.</p> : null}
+            </article>
           );
         })}
       </div>
 
-      {info ? <p className="text-sm text-green-600">{info}</p> : null}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
+      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
     </section>
   );
 }

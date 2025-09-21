@@ -2,7 +2,7 @@
 // Where to edit: 근태 출근/퇴근 동작을 수정하려면 loadAttendance, handlePunchIn/Out 함수를 확인하세요.
 /**
  * @file web/app/attendance/page.tsx
- * @description PocketBase 근태 기록을 조회하고 출근/퇴근을 기록하는 페이지입니다.
+ * @description PocketBase 근태 기록을 최신 스레드형 카드 UI로 조회하고 출근/퇴근을 기록하는 페이지이다.
  */
 
 import React from 'react';
@@ -145,54 +145,80 @@ export default function AttendancePage() {
   };
 
   if (!isAuthenticated) {
-    return <p className="text-sm">로그인 후 근태를 기록할 수 있습니다.</p>;
+    return (
+      <section className="thread-section">
+        <article className="thread-panel thread-panel--muted">
+          <p className="thread-muted">로그인 후 근태를 기록할 수 있습니다.</p>
+        </article>
+      </section>
+    );
   }
 
   const hasCheckedIn = Boolean(record?.check_in_at);
   const hasCheckedOut = Boolean(record?.check_out_at);
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold">근태 기록</h1>
-        <p className="text-sm text-slate-600">PocketBase의 attendance 컬렉션과 연동됩니다.</p>
+    <section className="thread-section">
+      <header className="thread-section__header">
+        <span className="thread-eyebrow">Attendance Thread</span>
+        <h1 className="thread-title">근태 기록</h1>
+        <p className="thread-subtitle">PocketBase의 attendance 컬렉션과 연동되어 역할에 맞춘 기록 흐름을 제공합니다.</p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="table-like space-y-3">
-          <h2 className="text-lg font-semibold">오늘의 기록</h2>
-          <p className="text-sm">출근 시간: {formatDate(record?.check_in_at)}</p>
-          <p className="text-sm">퇴근 시간: {formatDate(record?.check_out_at)}</p>
-          <p className="text-xs text-slate-500">참고 메모: {record?.note ?? '-'}</p>
-        </div>
+      <div className="thread-grid thread-grid--two">
+        {/* 오늘의 기록을 타임라인 카드로 보여준다. */}
+        <article className="thread-panel">
+          <div className="thread-meta">
+            <span>출근 · {formatDate(record?.check_in_at)}</span>
+            <span>퇴근 · {formatDate(record?.check_out_at)}</span>
+          </div>
+          <h2>오늘의 기록</h2>
+          <p className="thread-panel__description">현재 날짜 기준으로 가장 최신 근태 정보를 불러옵니다.</p>
+          <div className="thread-card-divider" />
+          <div className="thread-meta">
+            <span className={`thread-pill${hasCheckedIn ? ' thread-pill--accent' : ''}`}>
+              {hasCheckedIn ? '출근 완료' : '출근 대기'}
+            </span>
+            <span className={`thread-pill${hasCheckedOut ? ' thread-pill--accent' : ''}`}>
+              {hasCheckedOut ? '퇴근 완료' : '퇴근 대기'}
+            </span>
+          </div>
+          <p className="thread-muted">참고 메모 · {record?.note ?? '-'}</p>
+        </article>
 
-        <div className="table-like space-y-4">
+        {/* 출근/퇴근 액션 영역을 구성한다. */}
+        <article className="thread-panel">
+          <h2>액션</h2>
+          <p className="thread-panel__description">근태 버튼을 눌러 스레드에 새로운 이벤트를 추가하세요.</p>
+          <div className="thread-card-divider" />
           <button
-            className="w-full rounded bg-emerald-600 py-2 text-white disabled:opacity-40"
+            className="thread-button thread-button--primary"
             onClick={handlePunchIn}
             disabled={isLoading || hasCheckedIn}
           >
-            {hasCheckedIn ? '출근 완료' : '출근하기'}
+            {hasCheckedIn ? '출근 완료' : '출근 기록하기'}
           </button>
           <button
-            className="w-full rounded bg-rose-600 py-2 text-white disabled:opacity-40"
+            className="thread-button thread-button--danger"
             onClick={() => setShowConfirm(true)}
             disabled={isLoading || !hasCheckedIn || hasCheckedOut}
           >
-            {hasCheckedOut ? '퇴근 완료' : '퇴근하기'}
+            {hasCheckedOut ? '퇴근 완료' : '퇴근 요청하기'}
           </button>
-        </div>
+          <p className="thread-muted">퇴근은 한 번 기록하면 수정이 어려우니 주의하세요.</p>
+        </article>
       </div>
 
       {showConfirm ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-slate-900/60">
-          <div className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 shadow-xl">
-            <p className="text-sm">퇴근을 기록하면 수정이 어려울 수 있습니다. 계속 진행할까요?</p>
-            <div className="flex gap-2 text-sm">
-              <button className="flex-1 rounded border px-3 py-2" onClick={() => setShowConfirm(false)}>
+        <div className="thread-modal" role="dialog" aria-modal="true">
+          <div className="thread-modal__card">
+            <h2>퇴근을 기록할까요?</h2>
+            <p className="thread-muted">퇴근을 확정하면 편집 잠금이 적용될 수 있습니다. 계속 진행할지 선택하세요.</p>
+            <div className="thread-modal__actions">
+              <button className="thread-button thread-button--ghost" onClick={() => setShowConfirm(false)}>
                 취소
               </button>
-              <button className="flex-1 rounded bg-rose-600 px-3 py-2 text-white" onClick={handlePunchOut}>
+              <button className="thread-button thread-button--danger" onClick={handlePunchOut}>
                 퇴근 확정
               </button>
             </div>
@@ -200,8 +226,8 @@ export default function AttendancePage() {
         </div>
       ) : null}
 
-      {info ? <p className="text-sm text-green-600">{info}</p> : null}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
+      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
     </section>
   );
 }
