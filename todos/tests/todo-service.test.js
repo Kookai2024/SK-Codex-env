@@ -7,7 +7,7 @@
 require('ts-node/register/transpile-only');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createTodoService } = require('../api/todoService.ts');
+const { createTodoService, TODO_SERVICE_MESSAGES } = require('../api/todoService.ts');
 const {
   TODO_STATUSES,
   TODO_ALLOWED_ROLES
@@ -142,6 +142,26 @@ test('todo service allows admin update after lock', async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.ok, true);
   assert.equal(repository.todos[0].decision, '관리자 승인');
+});
+
+// 담당자가 아닌 사용자는 거절되어야 한다.
+test('todo service blocks member update for unassigned todo', async () => {
+  const repository = new InMemoryTodoRepository([
+    createTodoFixture({ assigneeId: 'other-user' })
+  ]);
+  const now = new Date('2025-09-25T12:00:00.000Z');
+  const service = createTodoService({ repository, timeProvider: () => now });
+
+  const result = await service.updateTodo(
+    { id: 'user-1', role: TODO_ALLOWED_ROLES.MEMBER },
+    'todo-1',
+    { notes: '권한 없는 수정' }
+  );
+
+  assert.equal(result.status, 403);
+  assert.equal(result.body.ok, false);
+  assert.equal(result.body.error, TODO_SERVICE_MESSAGES.NOT_ASSIGNED);
+  assert.equal(repository.todos[0].notes, null);
 });
 
 // 게스트 사용자는 항상 거부되어야 한다.

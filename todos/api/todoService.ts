@@ -16,8 +16,8 @@ import {
 } from '../types';
 import { buildTodoApiResponse, computeNextLockTimestamp, groupTodosIntoBoard, TODO_MESSAGES } from '../utils';
 
-// 서비스에서 공통으로 사용할 메시지 모음이다.
-const SERVICE_MESSAGES = {
+// 서비스에서 공통으로 사용할 메시지 모음이다. 테스트에서도 재사용할 수 있도록 export 한다.
+export const TODO_SERVICE_MESSAGES = {
   NOT_ASSIGNED: '본인에게 할당된 업무만 수정할 수 있습니다.',
   NO_FIELDS: '수정할 필드를 한 개 이상 선택하세요.'
 } as const;
@@ -93,7 +93,7 @@ export function createTodoService(deps: TodoServiceDependencies) {
 
       // 최소 한 개 이상의 필드가 존재해야 한다.
       if (Object.keys(input).length === 0) {
-        const body = buildTodoApiResponse(null, SERVICE_MESSAGES.NO_FIELDS, () => now);
+        const body = buildTodoApiResponse(null, TODO_SERVICE_MESSAGES.NO_FIELDS, () => now);
         return { status: 400, body };
       }
 
@@ -111,7 +111,7 @@ export function createTodoService(deps: TodoServiceDependencies) {
 
       if (user.role === TODO_ALLOWED_ROLES.MEMBER) {
         if (existing.assigneeId !== user.id) {
-          const body = buildTodoApiResponse(null, SERVICE_MESSAGES.NOT_ASSIGNED, () => now);
+          const body = buildTodoApiResponse(null, TODO_SERVICE_MESSAGES.NOT_ASSIGNED, () => now);
           return { status: 403, body };
         }
         if (isLockedForMembers(existing.lockedAt, now)) {
