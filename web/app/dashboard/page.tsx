@@ -2,7 +2,7 @@
 // Where to edit: 대시보드 카드 구성이나 권한별 UI를 변경하려면 SUMMARY_TILES와 fetchSummaries를 업데이트하세요.
 /**
  * @file web/app/dashboard/page.tsx
- * @description 역할 기반 대시보드와 공유 제어 UI를 제공하는 페이지입니다.
+ * @description 역할 기반 대시보드를 최신 스레드형 카드 스타일로 구성해 주요 통계를 보여주는 페이지이다.
  */
 
 import React from 'react';
@@ -92,34 +92,41 @@ export default function DashboardPage() {
   };
 
   if (!isAuthenticated) {
-    return <p className="text-sm">로그인 후 대시보드를 확인할 수 있습니다.</p>;
+    return (
+      <section className="thread-section">
+        <article className="thread-panel thread-panel--muted">
+          <p className="thread-muted">로그인 후 대시보드를 확인할 수 있습니다.</p>
+        </article>
+      </section>
+    );
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-bold">대시보드</h1>
-        <p className="text-sm text-slate-600">역할({role})에 따라 노출되는 정보가 다릅니다.</p>
+    <section className="thread-section">
+      <header className="thread-section__header">
+        <span className="thread-eyebrow">Team Overview Thread</span>
+        <h1 className="thread-title">대시보드</h1>
+        <p className="thread-subtitle">역할({role})에 따라 노출되는 정보가 달라집니다. 팀의 흐름을 한눈에 확인하세요.</p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="thread-grid thread-grid--four">
         {tiles.map((tile) => (
-          <article key={tile.id} className="table-like space-y-2">
-            <h2 className="text-lg font-semibold">{tile.label}</h2>
-            <p className="text-xs text-slate-500">{tile.description}</p>
-            <p className="text-3xl font-bold">{tile.count}</p>
+          <article key={tile.id} className="thread-panel thread-panel--stat">
+            <h2>{tile.label}</h2>
+            <p className="thread-panel__metric">{tile.count}</p>
+            <p className="thread-panel__description">{tile.description}</p>
           </article>
         ))}
       </div>
 
-      <section className="table-like space-y-3">
-        <header className="flex items-center justify-between">
+      <article className="thread-panel thread-panel--muted">
+        <header className="thread-meta">
           <div>
-            <h2 className="text-base font-semibold">공유 설정</h2>
-            <p className="text-xs text-slate-500">주간 보고서를 지정된 Obsidian 폴더에 복사하도록 설정합니다.</p>
+            <h2>공유 설정</h2>
+            <p className="thread-muted">주간 보고서를 지정된 Obsidian 폴더에 복사하도록 설정합니다.</p>
           </div>
           <button
-            className="rounded bg-indigo-600 px-4 py-2 text-sm text-white disabled:opacity-40"
+            className="thread-button thread-button--primary"
             onClick={handleSharingToggle}
             disabled={role !== 'admin'}
           >
@@ -127,12 +134,12 @@ export default function DashboardPage() {
           </button>
         </header>
         {role !== 'admin' ? (
-          <p className="text-xs text-amber-600">관리자만 공유 설정을 바꿀 수 있습니다.</p>
+          <div className="thread-alert thread-alert--info">관리자만 공유 설정을 바꿀 수 있습니다.</div>
         ) : null}
-      </section>
+      </article>
 
-      {info ? <p className="text-sm text-green-600">{info}</p> : null}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
+      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
     </section>
   );
 }

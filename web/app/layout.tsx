@@ -1,6 +1,6 @@
 /**
  * @file web/app/layout.tsx
- * @description Next.js App Router의 루트 레이아웃으로, 전역 네비게이션과 공통 스타일을 정의한다.
+ * @description Next.js App Router의 루트 레이아웃으로, 스레드 감성의 전역 네비게이션과 공통 배경을 제공한다.
  */
 
 import './globals.css';
@@ -9,31 +9,84 @@ import Link from 'next/link';
 import React from 'react';
 import { AuthProvider } from './providers';
 
+interface NavigationLink {
+  /** 네비게이션에 렌더링할 경로 */
+  href: string;
+  /** 사용자에게 노출할 라벨 */
+  label: string;
+  /** 강조가 필요한 링크인지 여부 */
+  isPrimary?: boolean;
+}
+
+/**
+ * 서비스 메타 정보를 하나의 상수로 묶어 관리해 매직 문자열을 방지한다.
+ */
+const APP_META = {
+  creatorName: 'SK.HAN',
+  publishVersion: 'v1.3.0',
+  lastUpdated: '2024-05-01'
+} as const;
+
+// 상단 네비게이션 구성을 정의해 링크 관리가 쉽도록 한다.
+const NAVIGATION_LINKS: NavigationLink[] = [
+  { href: '/login', label: '로그인' },
+  { href: '/attendance', label: '근태' },
+  { href: '/me', label: '내 업무' },
+  { href: '/dashboard', label: '대시보드', isPrimary: true }
+];
+
 export const metadata: Metadata = {
   title: 'Team Todo Console', // 브라우저 탭 제목을 정의한다.
   description: 'PocketBase 연동형 팀 할 일 & 근태 관리 도구' // 검색 엔진 설명을 제공한다.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // HTML 기본 구조를 정의하고 내비게이션을 렌더링한다.
+  // 전역 배경과 인증 컨텍스트를 구성해 모든 페이지가 동일한 UI를 공유하도록 한다.
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-slate-50 text-slate-900">
+      <body className="app-background">
         <AuthProvider>
-          <header className="border-b bg-white">
-            <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-              <Link href="/" className="font-semibold">
-                Team Todo Console
-              </Link>
-              <div className="flex gap-4 text-sm">
-                <Link href="/login">로그인</Link>
-                <Link href="/attendance">근태</Link>
-                <Link href="/me">내 업무</Link>
-                <Link href="/dashboard">대시보드</Link>
-              </div>
-            </nav>
-          </header>
-          <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+          <div className="app-shell">
+            <div className="app-container">
+              {/* 브랜드와 네비게이션을 스레드 스타일 카드 안에 배치한다. */}
+              <header className="thread-navbar">
+                <Link href="/" className="thread-navbar__brand">
+                  <span className="thread-navbar__brand-mark">TT</span>
+                  <span>Team Todo Console</span>
+                </Link>
+                <nav className="thread-nav-links" aria-label="주요 탐색">
+                  {NAVIGATION_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`thread-nav-link${link.isPrimary ? ' thread-nav-link--primary' : ''}`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+                {/* 서비스의 제작자와 배포 버전 정보를 우측 상단에 배치한다. */}
+                <div className="thread-navbar__meta" aria-label="서비스 메타 정보">
+                  <span className="thread-pill thread-pill--accent">Beta</span>
+                  <div className="thread-navbar__meta-item">
+                    <span className="thread-navbar__meta-label">Creator</span>
+                    <span className="thread-navbar__meta-value">{APP_META.creatorName}</span>
+                  </div>
+                  <div className="thread-navbar__meta-item">
+                    <span className="thread-navbar__meta-label">Publish</span>
+                    <span className="thread-navbar__meta-value">{APP_META.publishVersion}</span>
+                  </div>
+                  <div className="thread-navbar__meta-item">
+                    <span className="thread-navbar__meta-label">Updated</span>
+                    <span className="thread-navbar__meta-value">{APP_META.lastUpdated}</span>
+                  </div>
+                </div>
+              </header>
+
+              {/* 메인 콘텐츠를 카드 스택 형태로 렌더링한다. */}
+              <main className="thread-main">{children}</main>
+            </div>
+          </div>
         </AuthProvider>
       </body>
     </html>
