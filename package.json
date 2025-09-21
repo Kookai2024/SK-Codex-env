@@ -5,6 +5,7 @@
     "packages/server/scripts"
   ],
   "scripts": {
+    "dev": "ts-node scripts/start-stack.ts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -25,7 +26,8 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "@types/node": "^20.11.30"
   },
   "version": "1.0.0",
   "description": "- 팀 todo/근태/보고서 관리를 위한 LAN-first 시스템입니다.\r - PocketBase 기반 백엔드 + (추후) Next.js 기반 프런트엔드 구조를 목표로 합니다.\r - `team-todo-kickoff_v2_250920.md` 문서를 요구사항 원본으로 유지하며, 개발 단계별 진행 상황은 진행 현황 문서에서 확인합니다.",

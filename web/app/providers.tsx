@@ -7,16 +7,10 @@
 import React from 'react';
 import type { RecordModel } from 'pocketbase';
 import PocketBase from 'pocketbase';
+import { registerUserWithPocketBase } from '@auth/api/registerUser';
+import type { ApiResponse, AuthenticatedUser, RegistrationInput, UserRole } from '@auth/types';
+import { createApiResponse, mapRecordToAuthenticatedUser, normalizePocketBaseError } from '@auth/utils';
 import { getPocketBaseClient } from '../lib/pocketbase';
-
-type UserRole = 'admin' | 'member' | 'guest';
-
-interface AuthenticatedUser {
-  id: string;
-  email: string;
-  name?: string;
-  role: UserRole;
-}
 
 interface AuthContextValue {
   client: PocketBase;
@@ -24,23 +18,15 @@ interface AuthContextValue {
   role: UserRole;
   isAuthenticated: boolean;
   refreshFromStore: () => void;
+  login: (email: string, password: string) => Promise<ApiResponse<AuthenticatedUser>>;
+  register: (input: RegistrationInput) => Promise<ApiResponse<AuthenticatedUser>>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
 function toAuthenticatedUser(model: RecordModel | null): AuthenticatedUser | null {
-  // PocketBase 모델이 없으면 로그아웃 상태로 간주한다.
-  if (!model) {
-    return null;
-  }
-
-  return {
-    id: model.id,
-    email: model.email,
-    name: model.name,
-    role: (model.role as UserRole) ?? 'guest' // 역할이 없으면 게스트로 처리한다.
-  };
+  return mapRecordToAuthenticatedUser(model as unknown as Record<string, unknown> | null); // PocketBase 레코드를 도메인 모델로 변환한다.
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -58,6 +44,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [client]);
 
+  const loginCallback = React.useCallback(
+    async (email: string, password: string): Promise<ApiResponse<AuthenticatedUser>> => {
+      try {
+        await client.collection('users').authWithPassword(email, password); // PocketBase 로그인 요청을 수행한다.
+        const nextUser = toAuthenticatedUser(client.authStore.model); // 최신 사용자 정보를 추출한다.
+        if (!nextUser) {
+          return createApiResponse({ error: '인증된 사용자 정보를 확인하지 못했습니다.' });
+        }
+
+        setUser(nextUser);
+        return createApiResponse({ data: nextUser });
+      } catch (error) {
+        return createApiResponse({ error: normalizePocketBaseError(error) });
+      }
+    },
+    [client]
+  );
+
+  const registerCallback = React.useCallback(
+    async (input: RegistrationInput): Promise<ApiResponse<AuthenticatedUser>> => {
+      const response = await registerUserWithPocketBase(client, input); // PocketBase에 회원가입을 위임한다.
+      if (response.ok && response.data) {
+        setUser(response.data); // 자동 로그인된 사용자 정보를 반영한다.
+      }
+      return response;
+    },
+    [client]
+  );
+
   const contextValue = React.useMemo<AuthContextValue>(
     () => ({
       client,
@@ -65,12 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: user?.role ?? 'guest',
       isAuthenticated: Boolean(user),
       refreshFromStore: () => setUser(toAuthenticatedUser(client.authStore.model)),
+      login: loginCallback,
+      register: registerCallback,
       logout: async () => {
         client.authStore.clear(); // 클라이언트 저장소를 정리한다.
         setUser(null); // 상태를 로그아웃으로 업데이트한다.
       }
     }),
-    [client, user]
+    [client, loginCallback, registerCallback, user]
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

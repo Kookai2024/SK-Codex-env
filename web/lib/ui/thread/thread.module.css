@@ -14,16 +14,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--spacing-xl) 1.5rem 4rem;
+  padding: var(--spacing-xxl) 1.5rem 4rem;
 }
 
 .appShell::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: linear-gradient(120deg, rgba(59, 130, 246, 0.35), transparent 55%),
-    linear-gradient(310deg, rgba(236, 72, 153, 0.25), transparent 60%);
-  opacity: 0.75;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(244, 114, 182, 0.18), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.2), transparent 55%),
+    linear-gradient(120deg, rgba(192, 132, 252, 0.32), transparent 60%);
+  opacity: 0.9;
   pointer-events: none;
   z-index: 0;
 }
@@ -32,29 +34,41 @@
   width: min(var(--content-max-width), 100%);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
   position: relative;
   z-index: 1;
 }
 
 .navbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(140deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72));
-  border: 1px solid var(--surface-border);
+  padding: 1.5rem 1.75rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(12, 13, 30, 0.9), rgba(36, 14, 41, 0.78));
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: var(--shadow-small);
-  backdrop-filter: blur(22px);
-  gap: 1rem;
+  backdrop-filter: blur(26px);
+  gap: 1.25rem;
+}
+
+.navbar::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: calc(var(--radius-xl) - 2px);
+  background: linear-gradient(120deg, rgba(244, 114, 182, 0.15), rgba(129, 140, 248, 0.18));
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .navbarBrand {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.05rem;
+  gap: 0.9rem;
+  font-size: 1.08rem;
   font-weight: 700;
 }
 
@@ -62,78 +76,89 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(14, 165, 233, 0.85));
-  box-shadow: 0 14px 30px rgba(14, 165, 233, 0.35);
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.95), rgba(192, 132, 252, 0.92));
+  box-shadow: 0 18px 32px rgba(244, 114, 182, 0.35);
   color: #fff;
   font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .navLink {
-  padding: 0.55rem 0.95rem;
+  padding: 0.6rem 1.05rem;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-secondary);
   border: 1px solid transparent;
-  transition: background var(--transition), color var(--transition), transform var(--transition), border var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition),
+    transform var(--transition),
+    border var(--transition),
+    box-shadow var(--transition);
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .navLink:hover {
-  background: rgba(99, 102, 241, 0.28);
+  background: rgba(244, 114, 182, 0.24);
   color: #fff;
   transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(244, 114, 182, 0.22);
 }
 
 .navLinkPrimary {
-  background: rgba(59, 130, 246, 0.32);
-  border-color: rgba(59, 130, 246, 0.45);
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.32), rgba(129, 140, 248, 0.38));
+  border-color: rgba(244, 114, 182, 0.45);
   color: #fff;
-  box-shadow: 0 18px 34px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 22px 36px rgba(192, 132, 252, 0.3);
 }
 
 .navbarMeta {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   font-size: 0.75rem;
   color: var(--text-muted);
+  position: relative;
+  z-index: 1;
 }
 
 .main {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 
 .sectionHeader {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -142,28 +167,28 @@
 }
 
 .title {
-  font-size: clamp(2rem, 4vw, 2.7rem);
-  line-height: 1.2;
+  font-size: clamp(2.2rem, 4vw, 2.9rem);
+  line-height: 1.18;
 }
 
 .subtitle {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   color: var(--text-secondary);
   max-width: 640px;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .panel {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(140deg, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.78));
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(150deg, rgba(12, 13, 30, 0.92), rgba(36, 14, 41, 0.82));
   border: 1px solid var(--surface-border);
   box-shadow: var(--shadow-small);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
   overflow: hidden;
 }
 
@@ -182,20 +207,20 @@
 }
 
 .panelAccent {
-  background: linear-gradient(150deg, rgba(59, 130, 246, 0.28), rgba(15, 23, 42, 0.88));
-  border-color: rgba(96, 165, 250, 0.45);
+  background: linear-gradient(160deg, rgba(244, 114, 182, 0.18), rgba(12, 13, 30, 0.92));
+  border-color: rgba(244, 114, 182, 0.45);
 }
 
 .panelMuted {
-  background: linear-gradient(140deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
+  background: linear-gradient(150deg, rgba(12, 13, 30, 0.94), rgba(36, 14, 41, 0.82));
 }
 
 .panelStat {
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .panelMetric {
-  font-size: 2.7rem;
+  font-size: 2.8rem;
   font-weight: 700;
 }
 
@@ -226,41 +251,45 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.85rem;
+  padding: 0.38rem 0.95rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(148, 163, 184, 0.16);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  background: rgba(244, 114, 182, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
 .pillAccent {
-  background: rgba(96, 165, 250, 0.25);
-  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(129, 140, 248, 0.3);
+  border-color: rgba(129, 140, 248, 0.45);
   color: #fff;
 }
 
 .button {
   appearance: none;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1.1rem;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.2rem;
   font-size: 0.9rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
-  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition),
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    background var(--transition),
+    color var(--transition),
     border var(--transition);
 }
 
 .button:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.32);
+  box-shadow: 0 20px 34px rgba(8, 14, 35, 0.42);
 }
 
 .button:disabled {
@@ -271,20 +300,20 @@
 }
 
 .buttonPrimary {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(59, 130, 246, 0.88));
-  border-color: rgba(96, 165, 250, 0.55);
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.92), rgba(192, 132, 252, 0.88));
+  border-color: rgba(244, 114, 182, 0.52);
   color: #fff;
 }
 
 .buttonDanger {
-  background: linear-gradient(135deg, rgba(248, 113, 113, 0.92), rgba(239, 68, 68, 0.88));
-  border-color: rgba(248, 113, 113, 0.55);
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.9), rgba(239, 68, 68, 0.85));
+  border-color: rgba(248, 113, 113, 0.48);
   color: #fff;
 }
 
 .buttonGhost {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(244, 114, 182, 0.2);
 }
 
 .buttonLink {
@@ -300,6 +329,37 @@
   gap: var(--spacing-md);
 }
 
+.tabList {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  border: 1px solid rgba(244, 114, 182, 0.18);
+  padding: 0.3rem;
+  gap: 0.3rem;
+}
+
+.tabButton {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+}
+
+.tabButton:hover {
+  color: var(--text-secondary);
+}
+
+.tabButtonActive {
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.25), rgba(129, 140, 248, 0.25));
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(192, 132, 252, 0.24);
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -312,20 +372,22 @@
   color: var(--text-secondary);
 }
 
-.input {
+.input,
+.select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(12, 13, 30, 0.7);
   color: #fff;
   transition: border var(--transition), box-shadow var(--transition);
 }
 
-.input:focus {
+.input:focus,
+.select:focus {
   outline: none;
-  border-color: rgba(96, 165, 250, 0.55);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  border-color: rgba(244, 114, 182, 0.6);
+  box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.22);
 }
 
 .alert {
@@ -362,6 +424,12 @@
   gap: 0.5rem 1.2rem;
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.helper {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .timeline {

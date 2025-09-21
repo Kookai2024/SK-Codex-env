@@ -22,6 +22,11 @@ export type ThreadButtonVariant = 'default' | 'primary' | 'danger' | 'ghost' | '
 export type ThreadPillTone = 'default' | 'accent';
 /** 알림 배경 변형 목록 */
 export type ThreadAlertTone = 'success' | 'error' | 'info';
+/** 탭 버튼 상태 옵션 */
+export interface ThreadTabOptions {
+  /** 현재 탭이 활성화 상태인지 여부 */
+  isActive?: boolean;
+}
 
 /**
  * @description 전역에서 재사용할 스레드형 UI 클래스 모음이다.
@@ -76,6 +81,10 @@ export const threadClassNames = {
   form: threadModule.form,
   field: threadModule.field,
   label: threadModule.label,
+  select: threadModule.select,
+  tabList: threadModule.tabList,
+  tabButton: (options?: ThreadTabOptions) =>
+    composeThreadClasses(threadModule.tabButton, options?.isActive && threadModule.tabButtonActive),
   input: threadModule.input,
   alert: (options?: { tone?: ThreadAlertTone }) =>
     composeThreadClasses(
@@ -102,5 +111,6 @@ export const threadClassNames = {
   modalCard: threadModule.modalCard,
   modalActions: threadModule.modalActions,
   cardDivider: threadModule.cardDivider,
+  helper: threadModule.helper,
   muted: threadModule.muted
 } as const;

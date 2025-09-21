@@ -1,0 +1,41 @@
+/*
+ * @file web/styles/design-system/tokens.css
+ * @description 글로벌 디자인 토큰을 정의해 색상, 타이포그래피, 간격, 그림자 값 등을 일관되게 재사용한다.
+ */
+
+:root {
+  color-scheme: dark;
+  font-family: 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --app-gradient-start: #080315;
+  --app-gradient-mid: #1a1033;
+  --app-gradient-end: #2a0f3b;
+  --surface-primary: rgba(15, 23, 42, 0.84);
+  --surface-secondary: rgba(24, 24, 35, 0.78);
+  --surface-tertiary: rgba(39, 39, 61, 0.68);
+  --surface-border: rgba(148, 163, 184, 0.28);
+  --surface-highlight: linear-gradient(135deg, rgba(255, 122, 195, 0.22), rgba(129, 140, 248, 0.24));
+  --text-primary: #f8fafc;
+  --text-secondary: rgba(226, 232, 240, 0.88);
+  --text-muted: rgba(148, 163, 184, 0.82);
+  --accent: #f472b6;
+  --accent-strong: #c084fc;
+  --accent-radial-start: rgba(244, 114, 182, 0.45);
+  --accent-radial-end: rgba(129, 140, 248, 0.38);
+  --danger: #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --content-max-width: 1140px;
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 28px 54px rgba(8, 14, 35, 0.45);
+  --shadow-small: 0 16px 32px rgba(8, 14, 35, 0.3);
+  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --transition: 200ms ease-in-out;
+  --spacing-xxl: 3.5rem;
+  --spacing-xl: 3rem;
+  --spacing-lg: 2rem;
+  --spacing-md: 1.3rem;
+  --spacing-sm: 0.8rem;
+}

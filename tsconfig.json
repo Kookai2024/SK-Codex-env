@@ -8,7 +8,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
   },
   "include": [
     "auth/**/*.ts",
@@ -17,7 +18,8 @@
     "projects/**/*.ts",
     "dashboard/**/*.ts",
     "reports/**/*.ts",
-    "packages/server/scripts/**/*.ts"
+    "packages/server/scripts/**/*.ts",
+    "scripts/**/*.ts"
   ],
   "exclude": [
     "node_modules",

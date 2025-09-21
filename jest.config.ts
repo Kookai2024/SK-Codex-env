@@ -9,13 +9,23 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'ts-jest', // ts-jest를 사용해 TypeScript 파일을 바로 실행한다.
   testEnvironment: 'node', // 서버 사이드 로직을 기본으로 두기 때문에 node 환경을 사용한다.
-  roots: ['<rootDir>/attendance', '<rootDir>/todos', '<rootDir>/dashboard'], // 테스트 루트를 명시해 탐색 범위를 축소한다.
+  roots: [
+    '<rootDir>/auth',
+    '<rootDir>/attendance',
+    '<rootDir>/todos',
+    '<rootDir>/projects',
+    '<rootDir>/dashboard',
+    '<rootDir>/reports'
+  ], // 테스트 루트를 명시해 탐색 범위를 축소한다.
   testMatch: ['**/__tests__/**/*.test.ts'], // __tests__ 폴더 내 test.ts 파일만 선택한다.
   moduleFileExtensions: ['ts', 'js', 'json'], // 로딩 가능한 확장자 목록이다.
   collectCoverageFrom: [
+    'auth/**/*.{ts,tsx}',
     'attendance/**/*.{ts,tsx}',
     'todos/**/*.{ts,tsx}',
-    'dashboard/**/*.{ts,tsx}'
+    'projects/**/*.{ts,tsx}',
+    'dashboard/**/*.{ts,tsx}',
+    'reports/**/*.{ts,tsx}'
   ], // 기본 커버리지 수집 대상을 설정한다.
   verbose: true // 실행 중 자세한 로그를 출력해 초보자가 흐름을 파악하기 쉽도록 한다.
 };
