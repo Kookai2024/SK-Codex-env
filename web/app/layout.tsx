@@ -18,14 +18,16 @@ interface NavigationLink {
   isPrimary?: boolean;
 }
 
+
 /**
  * 서비스 메타 정보를 하나의 상수로 묶어 관리해 매직 문자열을 방지한다.
  */
 const APP_META = {
   creatorName: 'SK.HAN',
-  publishVersion: 'v1.3.0',
-  lastUpdated: '2024-05-01'
+  publishVersion: 'v1.1.0 (test)',
+  lastUpdated: '2025-09-21'
 } as const;
+
 
 // 상단 네비게이션 구성을 정의해 링크 관리가 쉽도록 한다.
 const NAVIGATION_LINKS: NavigationLink[] = [
@@ -65,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                   ))}
                 </nav>
+
                 {/* 서비스의 제작자와 배포 버전 정보를 우측 상단에 배치한다. */}
                 <div className="thread-navbar__meta" aria-label="서비스 메타 정보">
                   <span className="thread-pill thread-pill--accent">Beta</span>
@@ -80,6 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <span className="thread-navbar__meta-label">Updated</span>
                     <span className="thread-navbar__meta-value">{APP_META.lastUpdated}</span>
                   </div>
+
+                <div className="thread-navbar__meta">
+                  <span className="thread-pill thread-pill--accent">Beta</span>
+                  <span>최근 업데이트: 2024-05-01</span>
+
                 </div>
               </header>
 
