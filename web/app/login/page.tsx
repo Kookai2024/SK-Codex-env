@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { threadClassNames } from '../../lib/ui/thread/threadStyles';
 import { useAuth } from '../providers';
 
 export default function LoginPage() {
@@ -42,24 +43,24 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="thread-section">
-      <header className="thread-section__header">
-        <span className="thread-eyebrow">Authentication Thread</span>
-        <h1 className="thread-title">로그인</h1>
-        <p className="thread-subtitle">PocketBase 사용자 계정을 이용해 인증합니다. 역할에 따라 메뉴와 권한이 달라집니다.</p>
-        <p className="thread-muted">현재 상태: {isAuthenticated ? `${user?.email ?? ''} (${role})` : '로그아웃됨'}</p>
+    <section className={threadClassNames.section}>
+      <header className={threadClassNames.sectionHeader}>
+        <span className={threadClassNames.eyebrow}>Authentication Thread</span>
+        <h1 className={threadClassNames.title}>로그인</h1>
+        <p className={threadClassNames.subtitle}>PocketBase 사용자 계정을 이용해 인증합니다. 역할에 따라 메뉴와 권한이 달라집니다.</p>
+        <p className={threadClassNames.muted}>현재 상태: {isAuthenticated ? `${user?.email ?? ''} (${role})` : '로그아웃됨'}</p>
       </header>
 
-      <article className="thread-panel thread-panel--muted">
-        <form className="thread-form" onSubmit={handleSubmit}>
-          <div className="thread-field">
-            <label className="thread-label" htmlFor="email">
+      <article className={threadClassNames.panel({ variant: 'muted' })}>
+        <form className={threadClassNames.form} onSubmit={handleSubmit}>
+          <div className={threadClassNames.field}>
+            <label className={threadClassNames.label} htmlFor="email">
               이메일
             </label>
             <input
               id="email"
               type="email"
-              className="thread-input"
+              className={threadClassNames.input}
               placeholder="user@company.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -67,14 +68,14 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="thread-field">
-            <label className="thread-label" htmlFor="password">
+          <div className={threadClassNames.field}>
+            <label className={threadClassNames.label} htmlFor="password">
               비밀번호
             </label>
             <input
               id="password"
               type="password"
-              className="thread-input"
+              className={threadClassNames.input}
               placeholder="비밀번호"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -82,20 +83,20 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" className="thread-button thread-button--primary" disabled={isSubmitting}>
+          <button type="submit" className={threadClassNames.button({ variant: 'primary' })} disabled={isSubmitting}>
             {isSubmitting ? '로그인 중...' : '로그인'}
           </button>
         </form>
 
         {isAuthenticated ? (
-          <button className="thread-button thread-button--ghost" onClick={handleLogout}>
+          <button className={threadClassNames.button({ variant: 'ghost' })} onClick={handleLogout}>
             로그아웃
           </button>
         ) : null}
       </article>
 
-      {message ? <div className="thread-alert thread-alert--success">{message}</div> : null}
-      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
+      {message ? <div className={threadClassNames.alert({ tone: 'success' })}>{message}</div> : null}
+      {error ? <div className={threadClassNames.alert({ tone: 'error' })}>{error}</div> : null}
     </section>
   );
 }

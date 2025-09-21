@@ -3,11 +3,13 @@
  * @description Next.js App Router의 루트 레이아웃으로, 스레드 감성의 전역 네비게이션과 공통 배경을 제공한다.
  */
 
-import './globals.css';
+import '../styles/base.css';
+import '../styles/tokens.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import React from 'react';
 import { AuthProvider } from './providers';
+import { threadClassNames } from '../lib/ui/thread/threadStyles';
 
 interface NavigationLink {
   /** 네비게이션에 렌더링할 경로 */
@@ -35,35 +37,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // 전역 배경과 인증 컨텍스트를 구성해 모든 페이지가 동일한 UI를 공유하도록 한다.
   return (
     <html lang="ko">
-      <body className="app-background">
+      <body className={threadClassNames.appBackground}>
         <AuthProvider>
-          <div className="app-shell">
-            <div className="app-container">
+          <div className={threadClassNames.appShell}>
+            <div className={threadClassNames.appContainer}>
               {/* 브랜드와 네비게이션을 스레드 스타일 카드 안에 배치한다. */}
-              <header className="thread-navbar">
-                <Link href="/" className="thread-navbar__brand">
-                  <span className="thread-navbar__brand-mark">TT</span>
+              <header className={threadClassNames.navbar}>
+                <Link href="/" className={threadClassNames.navbarBrand}>
+                  <span className={threadClassNames.navbarBrandMark}>TT</span>
                   <span>Team Todo Console</span>
                 </Link>
-                <nav className="thread-nav-links" aria-label="주요 탐색">
+                <nav className={threadClassNames.navLinks} aria-label="주요 탐색">
                   {NAVIGATION_LINKS.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`thread-nav-link${link.isPrimary ? ' thread-nav-link--primary' : ''}`}
+                      className={threadClassNames.navLink({ isPrimary: link.isPrimary })}
                     >
                       {link.label}
                     </Link>
                   ))}
                 </nav>
-                <div className="thread-navbar__meta">
-                  <span className="thread-pill thread-pill--accent">Beta</span>
+                <div className={threadClassNames.navbarMeta}>
+                  <span className={threadClassNames.pill({ tone: 'accent' })}>Beta</span>
                   <span>최근 업데이트: 2024-05-01</span>
                 </div>
               </header>
 
               {/* 메인 콘텐츠를 카드 스택 형태로 렌더링한다. */}
-              <main className="thread-main">{children}</main>
+              <main className={threadClassNames.main}>{children}</main>
             </div>
           </div>
         </AuthProvider>

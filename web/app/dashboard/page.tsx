@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { threadClassNames } from '../../lib/ui/thread/threadStyles';
 import { useAuth } from '../providers';
 
 interface SummaryTile {
@@ -93,40 +94,40 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <section className="thread-section">
-        <article className="thread-panel thread-panel--muted">
-          <p className="thread-muted">로그인 후 대시보드를 확인할 수 있습니다.</p>
+      <section className={threadClassNames.section}>
+        <article className={threadClassNames.panel({ variant: 'muted' })}>
+          <p className={threadClassNames.muted}>로그인 후 대시보드를 확인할 수 있습니다.</p>
         </article>
       </section>
     );
   }
 
   return (
-    <section className="thread-section">
-      <header className="thread-section__header">
-        <span className="thread-eyebrow">Team Overview Thread</span>
-        <h1 className="thread-title">대시보드</h1>
-        <p className="thread-subtitle">역할({role})에 따라 노출되는 정보가 달라집니다. 팀의 흐름을 한눈에 확인하세요.</p>
+    <section className={threadClassNames.section}>
+      <header className={threadClassNames.sectionHeader}>
+        <span className={threadClassNames.eyebrow}>Team Overview Thread</span>
+        <h1 className={threadClassNames.title}>대시보드</h1>
+        <p className={threadClassNames.subtitle}>역할({role})에 따라 노출되는 정보가 달라집니다. 팀의 흐름을 한눈에 확인하세요.</p>
       </header>
 
-      <div className="thread-grid thread-grid--four">
+      <div className={threadClassNames.grid({ layout: 'four' })}>
         {tiles.map((tile) => (
-          <article key={tile.id} className="thread-panel thread-panel--stat">
+          <article key={tile.id} className={threadClassNames.panel({ variant: 'stat' })}>
             <h2>{tile.label}</h2>
-            <p className="thread-panel__metric">{tile.count}</p>
-            <p className="thread-panel__description">{tile.description}</p>
+            <p className={threadClassNames.panelMetric}>{tile.count}</p>
+            <p className={threadClassNames.panelDescription}>{tile.description}</p>
           </article>
         ))}
       </div>
 
-      <article className="thread-panel thread-panel--muted">
-        <header className="thread-meta">
+      <article className={threadClassNames.panel({ variant: 'muted' })}>
+        <header className={threadClassNames.meta}>
           <div>
             <h2>공유 설정</h2>
-            <p className="thread-muted">주간 보고서를 지정된 Obsidian 폴더에 복사하도록 설정합니다.</p>
+            <p className={threadClassNames.muted}>주간 보고서를 지정된 Obsidian 폴더에 복사하도록 설정합니다.</p>
           </div>
           <button
-            className="thread-button thread-button--primary"
+            className={threadClassNames.button({ variant: 'primary' })}
             onClick={handleSharingToggle}
             disabled={role !== 'admin'}
           >
@@ -134,12 +135,12 @@ export default function DashboardPage() {
           </button>
         </header>
         {role !== 'admin' ? (
-          <div className="thread-alert thread-alert--info">관리자만 공유 설정을 바꿀 수 있습니다.</div>
+          <div className={threadClassNames.alert({ tone: 'info' })}>관리자만 공유 설정을 바꿀 수 있습니다.</div>
         ) : null}
       </article>
 
-      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
-      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
+      {info ? <div className={threadClassNames.alert({ tone: 'success' })}>{info}</div> : null}
+      {error ? <div className={threadClassNames.alert({ tone: 'error' })}>{error}</div> : null}
     </section>
   );
 }

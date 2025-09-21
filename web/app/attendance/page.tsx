@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { threadClassNames } from '../../lib/ui/thread/threadStyles';
 import { useAuth } from '../providers';
 
 interface AttendanceRecord {
@@ -146,9 +147,9 @@ export default function AttendancePage() {
 
   if (!isAuthenticated) {
     return (
-      <section className="thread-section">
-        <article className="thread-panel thread-panel--muted">
-          <p className="thread-muted">로그인 후 근태를 기록할 수 있습니다.</p>
+      <section className={threadClassNames.section}>
+        <article className={threadClassNames.panel({ variant: 'muted' })}>
+          <p className={threadClassNames.muted}>로그인 후 근태를 기록할 수 있습니다.</p>
         </article>
       </section>
     );
@@ -158,67 +159,67 @@ export default function AttendancePage() {
   const hasCheckedOut = Boolean(record?.check_out_at);
 
   return (
-    <section className="thread-section">
-      <header className="thread-section__header">
-        <span className="thread-eyebrow">Attendance Thread</span>
-        <h1 className="thread-title">근태 기록</h1>
-        <p className="thread-subtitle">PocketBase의 attendance 컬렉션과 연동되어 역할에 맞춘 기록 흐름을 제공합니다.</p>
+    <section className={threadClassNames.section}>
+      <header className={threadClassNames.sectionHeader}>
+        <span className={threadClassNames.eyebrow}>Attendance Thread</span>
+        <h1 className={threadClassNames.title}>근태 기록</h1>
+        <p className={threadClassNames.subtitle}>PocketBase의 attendance 컬렉션과 연동되어 역할에 맞춘 기록 흐름을 제공합니다.</p>
       </header>
 
-      <div className="thread-grid thread-grid--two">
+      <div className={threadClassNames.grid({ layout: 'two' })}>
         {/* 오늘의 기록을 타임라인 카드로 보여준다. */}
-        <article className="thread-panel">
-          <div className="thread-meta">
+        <article className={threadClassNames.panel()}>
+          <div className={threadClassNames.meta}>
             <span>출근 · {formatDate(record?.check_in_at)}</span>
             <span>퇴근 · {formatDate(record?.check_out_at)}</span>
           </div>
           <h2>오늘의 기록</h2>
-          <p className="thread-panel__description">현재 날짜 기준으로 가장 최신 근태 정보를 불러옵니다.</p>
-          <div className="thread-card-divider" />
-          <div className="thread-meta">
-            <span className={`thread-pill${hasCheckedIn ? ' thread-pill--accent' : ''}`}>
+          <p className={threadClassNames.panelDescription}>현재 날짜 기준으로 가장 최신 근태 정보를 불러옵니다.</p>
+          <div className={threadClassNames.cardDivider} />
+          <div className={threadClassNames.meta}>
+            <span className={threadClassNames.pill({ tone: hasCheckedIn ? 'accent' : 'default' })}>
               {hasCheckedIn ? '출근 완료' : '출근 대기'}
             </span>
-            <span className={`thread-pill${hasCheckedOut ? ' thread-pill--accent' : ''}`}>
+            <span className={threadClassNames.pill({ tone: hasCheckedOut ? 'accent' : 'default' })}>
               {hasCheckedOut ? '퇴근 완료' : '퇴근 대기'}
             </span>
           </div>
-          <p className="thread-muted">참고 메모 · {record?.note ?? '-'}</p>
+          <p className={threadClassNames.muted}>참고 메모 · {record?.note ?? '-'}</p>
         </article>
 
         {/* 출근/퇴근 액션 영역을 구성한다. */}
-        <article className="thread-panel">
+        <article className={threadClassNames.panel()}>
           <h2>액션</h2>
-          <p className="thread-panel__description">근태 버튼을 눌러 스레드에 새로운 이벤트를 추가하세요.</p>
-          <div className="thread-card-divider" />
+          <p className={threadClassNames.panelDescription}>근태 버튼을 눌러 스레드에 새로운 이벤트를 추가하세요.</p>
+          <div className={threadClassNames.cardDivider} />
           <button
-            className="thread-button thread-button--primary"
+            className={threadClassNames.button({ variant: 'primary' })}
             onClick={handlePunchIn}
             disabled={isLoading || hasCheckedIn}
           >
             {hasCheckedIn ? '출근 완료' : '출근 기록하기'}
           </button>
           <button
-            className="thread-button thread-button--danger"
+            className={threadClassNames.button({ variant: 'danger' })}
             onClick={() => setShowConfirm(true)}
             disabled={isLoading || !hasCheckedIn || hasCheckedOut}
           >
             {hasCheckedOut ? '퇴근 완료' : '퇴근 요청하기'}
           </button>
-          <p className="thread-muted">퇴근은 한 번 기록하면 수정이 어려우니 주의하세요.</p>
+          <p className={threadClassNames.muted}>퇴근은 한 번 기록하면 수정이 어려우니 주의하세요.</p>
         </article>
       </div>
 
       {showConfirm ? (
-        <div className="thread-modal" role="dialog" aria-modal="true">
-          <div className="thread-modal__card">
+        <div className={threadClassNames.modal} role="dialog" aria-modal="true">
+          <div className={threadClassNames.modalCard}>
             <h2>퇴근을 기록할까요?</h2>
-            <p className="thread-muted">퇴근을 확정하면 편집 잠금이 적용될 수 있습니다. 계속 진행할지 선택하세요.</p>
-            <div className="thread-modal__actions">
-              <button className="thread-button thread-button--ghost" onClick={() => setShowConfirm(false)}>
+            <p className={threadClassNames.muted}>퇴근을 확정하면 편집 잠금이 적용될 수 있습니다. 계속 진행할지 선택하세요.</p>
+            <div className={threadClassNames.modalActions}>
+              <button className={threadClassNames.button({ variant: 'ghost' })} onClick={() => setShowConfirm(false)}>
                 취소
               </button>
-              <button className="thread-button thread-button--danger" onClick={handlePunchOut}>
+              <button className={threadClassNames.button({ variant: 'danger' })} onClick={handlePunchOut}>
                 퇴근 확정
               </button>
             </div>
@@ -226,8 +227,8 @@ export default function AttendancePage() {
         </div>
       ) : null}
 
-      {info ? <div className="thread-alert thread-alert--success">{info}</div> : null}
-      {error ? <div className="thread-alert thread-alert--error">{error}</div> : null}
+      {info ? <div className={threadClassNames.alert({ tone: 'success' })}>{info}</div> : null}
+      {error ? <div className={threadClassNames.alert({ tone: 'error' })}>{error}</div> : null}
     </section>
   );
 }
