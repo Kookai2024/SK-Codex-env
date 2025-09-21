@@ -1,3 +1,4 @@
+// tsconfig.json: TypeScript 컴파일러 설정이며 초보자는 include 항목을 참고해 필요한 디렉터리를 추가하세요.
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -10,6 +11,16 @@
     "resolveJsonModule": true
   },
   "include": [
-    "attendance/**/*.ts"
+    "auth/**/*.ts",
+    "attendance/**/*.ts",
+    "todos/**/*.ts",
+    "projects/**/*.ts",
+    "dashboard/**/*.ts",
+    "reports/**/*.ts",
+    "packages/server/scripts/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "web"
   ]
 }

@@ -1,0 +1,29 @@
+# test.yml: 기본 npm test CI 워크플로우. pb_data 변경 시에는 실행하지 않습니다.
+name: Node CI
+
+on:
+  push:
+    branches: ['*']
+    paths-ignore:
+      - 'server/pb_data/**'
+  pull_request:
+    paths-ignore:
+      - 'server/pb_data/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test

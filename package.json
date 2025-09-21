@@ -5,8 +5,10 @@
     "packages/server/scripts"
   ],
   "scripts": {
-    "test": "npm run test:attendance && npm run test:scripts",
-    "test:attendance": "node --test attendance/tests todos/tests dashboard/tests",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "report:weekly": "ts-node packages/server/scripts/cron-weekly-report.ts",
     "test:scripts": "npm --prefix packages/server/scripts test"
   },
   "dependencies": {
