@@ -10,6 +10,7 @@ const assert = require('node:assert/strict');
 const express = require('express');
 const request = require('supertest');
 const { createTodoRouter } = require('../api/todoRouter.ts');
+const { TODO_SERVICE_MESSAGES } = require('../api/todoService.ts');
 const {
   TODO_ALLOWED_ROLES,
   TODO_STATUSES
@@ -136,6 +137,23 @@ test('todo router blocks member patch after lock', async () => {
   assert.equal(response.body.error, TODO_MESSAGES.LOCKED);
 });
 
+// 담당자가 아닌 사용자가 수정하려고 하면 거절되어야 한다.
+test('todo router blocks member patch for unassigned todo', async () => {
+  const { app, repository } = createTestApp({
+    todos: [createTodoFixture({ assigneeId: 'other-user' })]
+  });
+
+  const response = await request(app)
+    .patch('/todos/todo-1')
+    .set(buildHeaders())
+    .send({ notes: '권한 없는 수정' });
+
+  assert.equal(response.status, 403);
+  assert.equal(response.body.ok, false);
+  assert.equal(response.body.error, TODO_SERVICE_MESSAGES.NOT_ASSIGNED);
+  assert.equal(repository.todos[0].notes, null);
+});
+
 // 인증 헤더가 없으면 401이어야 한다.
 test('todo router rejects missing auth headers', async () => {
   const { app } = createTestApp();
@@ -150,4 +168,19 @@ test('todo router rejects empty patch body', async () => {
   const response = await request(app).patch('/todos/todo-1').set(buildHeaders()).send({});
   assert.equal(response.status, 400);
   assert.equal(response.body.ok, false);
+});
+
+// 게스트 사용자는 수정 요청이 거절되어야 한다.
+test('todo router rejects guest patch requests', async () => {
+  const { app, repository } = createTestApp();
+
+  const response = await request(app)
+    .patch('/todos/todo-1')
+    .set(buildHeaders(TODO_ALLOWED_ROLES.GUEST, 'guest-1'))
+    .send({ notes: '게스트 수정' });
+
+  assert.equal(response.status, 403);
+  assert.equal(response.body.ok, false);
+  assert.equal(response.body.error, TODO_MESSAGES.FORBIDDEN);
+  assert.equal(repository.todos[0].notes, null);
 });
