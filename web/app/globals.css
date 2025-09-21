@@ -188,11 +188,41 @@ h6 {
 }
 
 .thread-navbar__meta {
+
+  /* 우측 상단 메타 영역을 세로 정렬해 제작자와 버전 정보를 명확히 노출한다. */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(var(--spacing-sm) / 2);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.thread-navbar__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-sm) / 4);
+  align-items: flex-end;
+}
+
+.thread-navbar__meta-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.thread-navbar__meta-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.75rem;
   color: var(--text-muted);
+
 }
 
 .thread-main {
@@ -316,6 +346,7 @@ h6 {
   color: var(--text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
+
 }
 
 .thread-pill--accent {
@@ -456,6 +487,148 @@ h6 {
   position: relative;
 }
 
+
+}
+
+.thread-pill--accent {
+  background: rgba(96, 165, 250, 0.25);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #fff;
+}
+
+.thread-button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-secondary);
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition), color var(--transition), border var(--transition);
+}
+
+.thread-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.32);
+}
+
+.thread-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.thread-button--primary {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(59, 130, 246, 0.88));
+  border-color: rgba(96, 165, 250, 0.55);
+  color: #fff;
+}
+
+.thread-button--danger {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.92), rgba(239, 68, 68, 0.88));
+  border-color: rgba(248, 113, 113, 0.55);
+  color: #fff;
+}
+
+.thread-button--ghost {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.thread-button--link {
+  background: transparent;
+  border-color: transparent;
+  padding-inline: 0;
+  justify-content: flex-start;
+}
+
+.thread-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.thread-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.thread-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.thread-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  transition: border var(--transition), box-shadow var(--transition);
+}
+
+.thread-input:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.thread-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  border: 1px solid transparent;
+}
+
+.thread-alert--success {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.45);
+  color: #bbf7d0;
+}
+
+.thread-alert--error {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.thread-alert--info {
+  background: rgba(96, 165, 250, 0.18);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #dbeafe;
+}
+
+.thread-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.thread-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  position: relative;
+}
+
+
 .thread-timeline::before {
   content: '';
   position: absolute;
@@ -513,6 +686,7 @@ h6 {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+
   padding: 1rem;
   border-radius: var(--radius-md);
   background: rgba(15, 23, 42, 0.86);
@@ -556,6 +730,51 @@ h6 {
   background: rgba(148, 163, 184, 0.12);
   border-radius: var(--radius-md);
   padding: 1rem;
+
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  box-shadow: var(--shadow-inner);
+}
+
+.thread-kanban-card--locked {
+  border-color: rgba(251, 191, 36, 0.55);
+}
+
+.thread-kanban-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.22);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #fef08a;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.thread-kanban-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.thread-kanban-card__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.thread-empty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+
   text-align: center;
 }
 
