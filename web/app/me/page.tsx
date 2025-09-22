@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { composeThreadClasses, threadClassNames } from '../../lib/ui/thread/threadStyles';
+import { composeThreadClasses, threadClassNames } from '../../features/design-system/ui/threadClassNames';
 import { useAuth } from '../providers';
 
 interface TodoRecord {

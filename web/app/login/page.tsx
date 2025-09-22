@@ -8,7 +8,7 @@
 import React from 'react';
 import type { RegistrationInput, UserRole } from '@auth/types';
 import { DEFAULT_USER_ROLE, normalizePocketBaseError } from '@auth/utils';
-import { threadClassNames } from '../../lib/ui/thread/threadStyles';
+import { threadClassNames } from '../../features/design-system/ui/threadClassNames';
 import { useAuth } from '../providers';
 
 // 회원가입에서 선택 가능한 기본 역할 목록을 정의해 RBAC 기본 정책을 드러낸다.

@@ -3,13 +3,13 @@
  * @description Next.js App Router의 루트 레이아웃으로, 스레드 감성의 전역 네비게이션과 공통 배경을 제공한다.
  */
 
-import '../styles/design-system/tokens.css';
-import '../styles/design-system/base.css';
+import '../features/design-system/styles/core/tokens.css';
+import '../features/design-system/styles/core/base.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import React from 'react';
 import { AuthProvider } from './providers';
-import { threadClassNames } from '../lib/ui/thread/threadStyles';
+import { threadClassNames } from '../features/design-system/ui/threadClassNames';
 
 interface NavigationLink {
   /** 네비게이션에 렌더링할 경로 */

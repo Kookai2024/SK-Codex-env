@@ -4,7 +4,7 @@
  */
 
 import Link from 'next/link';
-import { threadClassNames } from '../lib/ui/thread/threadStyles';
+import { threadClassNames } from '../features/design-system/ui/threadClassNames';
 
 interface OnboardingStep {
   /** 단계 표시용 번호 */

@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { threadClassNames } from '../../lib/ui/thread/threadStyles';
+import { threadClassNames } from '../../features/design-system/ui/threadClassNames';
 import { useAuth } from '../providers';
 
 interface AttendanceRecord {

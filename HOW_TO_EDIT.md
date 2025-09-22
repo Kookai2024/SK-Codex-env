@@ -30,6 +30,7 @@ npm run dev                     # http://localhost:3000 에서 UI 확인
 - 매직 넘버는 상수나 설정 파일(`*.config.*`, `constants.ts`)로 분리합니다.
 - API 응답은 `{ ok, data, error }` 형태를 지키고, 서버 타임스탬프를 신뢰합니다.
 - RBAC(`admin/member/guest`)과 편집 잠금(다음날 09:00 KST 이후 차단)을 항상 고려합니다.
+- Threads 스타일 컴포넌트는 `web/features/design-system/`에 정리되어 있으니 레이아웃·카드·폼 등 원하는 모듈에서 수정하세요.
 
 ## 5. 작업 체크리스트
 - [ ] Jest 루트 테스트(`npm test`) 통과
